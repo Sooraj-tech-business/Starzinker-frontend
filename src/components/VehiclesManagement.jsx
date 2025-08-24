@@ -520,9 +520,11 @@ export default function VehiclesManagement({ branches, onEditVehicle, onAddVehic
         </div>
       )}
 
-      {/* Expired Documents Table */}
+      {/* Document Tables */}
       {activeView === 'documents' && (
-        <div className="bg-white rounded-xl shadow-xl border border-red-200 overflow-hidden mb-6">
+        <>
+          {/* Expired Documents Table */}
+          <div className="bg-white rounded-xl shadow-xl border border-red-200 overflow-hidden mb-6">
           <div className="bg-gradient-to-r from-red-500 to-red-600 px-6 py-5">
             <h3 className="text-xl font-bold text-white flex items-center">
               <div className="bg-white bg-opacity-20 rounded-full p-2 mr-3">
@@ -687,49 +689,88 @@ export default function VehiclesManagement({ branches, onEditVehicle, onAddVehic
               </table>
             </div>
           </div>
-        </div>
-      )}
 
-      {/* Expiring Soon Documents Table */}
-      {activeView === 'documents' && (
-        <div className="bg-white shadow-xl rounded-xl border border-gray-100 overflow-hidden">
-          <div className="bg-gradient-to-r from-yellow-50 to-yellow-100 px-6 py-4 border-b border-yellow-200">
-            <h3 className="text-lg font-semibold text-yellow-800 mb-4">Expiring Soon Vehicle Documents</h3>
+          {/* Expiring Soon Documents Table */}
+          <div className="bg-white rounded-xl shadow-xl border border-orange-200 overflow-hidden">
+          <div className="bg-gradient-to-r from-orange-500 to-amber-500 px-6 py-5">
+            <h3 className="text-xl font-bold text-white flex items-center">
+              <div className="bg-white bg-opacity-20 rounded-full p-2 mr-3">
+                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                </svg>
+              </div>
+              <div>
+                <div>Vehicle Documents Expiring Soon</div>
+                <div className="text-orange-100 text-sm font-normal">Renewal Required • {(() => {
+                  const today = new Date();
+                  const thirtyDaysFromNow = new Date();
+                  thirtyDaysFromNow.setDate(thirtyDaysFromNow.getDate() + 30);
+                  let expiring = 0;
+                  vehicles.forEach(vehicle => {
+                    if (vehicle.licenseExpiry) {
+                      const expiry = new Date(vehicle.licenseExpiry);
+                      if (expiry >= today && expiry <= thirtyDaysFromNow) expiring++;
+                    }
+                    if (vehicle.insuranceExpiry) {
+                      const expiry = new Date(vehicle.insuranceExpiry);
+                      if (expiry >= today && expiry <= thirtyDaysFromNow) expiring++;
+                    }
+                  });
+                  return expiring;
+                })()} documents</div>
+              </div>
+            </h3>
+          </div>
             
-            {/* Search and Filter for Expiring Soon */}
-            <div className="mb-4 grid grid-cols-1 md:grid-cols-3 gap-4">
-              <input
-                type="text"
-                placeholder="Search expiring documents..."
-                className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              />
-              <select className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                <option value="all">All Branches</option>
-                {getFilterOptions('branchName').map(branch => (
-                  <option key={branch} value={branch}>{branch}</option>
-                ))}
-              </select>
-              <select className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                <option value="all">All Types</option>
-                {getFilterOptions('type').map(type => (
-                  <option key={type} value={type}>{type}</option>
-                ))}
-              </select>
-            </div>
-
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gradient-to-r from-yellow-50 to-yellow-100">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-yellow-700 uppercase tracking-wider">Vehicle</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-yellow-700 uppercase tracking-wider">Branch</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-yellow-700 uppercase tracking-wider">Document Type</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-yellow-700 uppercase tracking-wider">Expiry Date</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-yellow-700 uppercase tracking-wider">Status</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-yellow-700 uppercase tracking-wider">Days Left</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-yellow-700 uppercase tracking-wider">Actions</th>
-                  </tr>
-                </thead>
+          <div className="overflow-x-auto">
+            <table className="min-w-full">
+              <thead className="bg-gradient-to-r from-gray-50 to-gray-100">
+                <tr>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                    <div className="flex items-center">
+                      <svg className="w-4 h-4 mr-2 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM21 17a2 2 0 11-4 0 2 2 0 014 0zM7 9l4-4 4 4M7 9v6a2 2 0 002 2h6a2 2 0 002-2V9M7 9H5a2 2 0 00-2 2v6a2 2 0 002 2h2m10-8V9a2 2 0 00-2-2H9a2 2 0 00-2 2v0" />
+                      </svg>
+                      Vehicle
+                    </div>
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                    <div className="flex items-center">
+                      <svg className="w-4 h-4 mr-2 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                      </svg>
+                      Branch
+                    </div>
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                    <div className="flex items-center">
+                      <svg className="w-4 h-4 mr-2 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                      Document
+                    </div>
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                    <div className="flex items-center">
+                      <svg className="w-4 h-4 mr-2 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3a2 2 0 012-2h4a2 2 0 012 2v4m-6 0h6m-6 0l-2 9a2 2 0 002 2h8a2 2 0 002-2l-2-9" />
+                      </svg>
+                      Expiry Date
+                    </div>
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                    <div className="flex items-center">
+                      <svg className="w-4 h-4 mr-2 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      Time Left
+                    </div>
+                  </th>
+                  <th className="px-6 py-4 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                    Action
+                  </th>
+                </tr>
+              </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {(() => {
                     const today = new Date();
@@ -830,7 +871,7 @@ export default function VehiclesManagement({ branches, onEditVehicle, onAddVehic
               </table>
             </div>
           </div>
-        </div>
+        </>
       )}
 
       {/* Data Table */}
