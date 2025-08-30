@@ -50,7 +50,81 @@ export default function BranchesManagement({ branches, users, onAddBranchClick, 
         </button>
       </div>
       
-      <div className="mt-6 bg-white shadow overflow-hidden sm:rounded-md">
+      {/* Mobile Card View */}
+      <div className="block md:hidden mt-6 space-y-4">
+        {branches && branches.map((branch) => (
+          <div key={branch._id} className="bg-white rounded-lg shadow border border-gray-200 overflow-hidden">
+            <div className="p-4">
+              <div className="flex items-center space-x-3 mb-3">
+                <div className="flex-shrink-0 h-12 w-12 bg-indigo-100 rounded-full flex items-center justify-center">
+                  <span className="text-sm font-medium text-indigo-800">{getAbbreviation(branch.name)}</span>
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-lg font-semibold text-gray-900">{branch.name}</h3>
+                  <p className="text-sm text-gray-600">{branch.location}</p>
+                  <p className="text-sm text-gray-500">{branch.email}</p>
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-3 mb-3 text-sm">
+                <div>
+                  <span className="text-gray-500">Manager:</span>
+                  <div className="font-medium">{branch.manager || 'N/A'}</div>
+                </div>
+                <div>
+                  <span className="text-gray-500">Contact:</span>
+                  <div className="font-medium">{branch.contactNumber || 'N/A'}</div>
+                </div>
+                <div>
+                  <span className="text-gray-500">Documents:</span>
+                  <div className="font-medium">{branch.documents?.length || 0}</div>
+                </div>
+                <div>
+                  <span className="text-gray-500">Vehicles:</span>
+                  <div className="font-medium">{branch.vehicles?.length || 0}</div>
+                </div>
+                <div>
+                  <span className="text-gray-500">Employees:</span>
+                  <div className="font-medium">
+                    {(() => {
+                      const count = users?.filter(user => 
+                        user.workLocation === branch.name || 
+                        user.branch === branch.name
+                      ).length || 0;
+                      return count;
+                    })()}
+                  </div>
+                </div>
+                <div>
+                  <span className="text-gray-500">Address:</span>
+                  <div className="font-medium text-xs">{branch.address || 'N/A'}</div>
+                </div>
+              </div>
+              
+              <div className="flex space-x-2">
+                <button
+                  onClick={() => handleBranchDoubleClick(branch)}
+                  className="flex-1 px-3 py-2 text-sm bg-indigo-100 text-indigo-700 rounded-md hover:bg-indigo-200"
+                >
+                  View
+                </button>
+                <button
+                  onClick={() => onEditBranch(branch._id)}
+                  className="flex-1 px-3 py-2 text-sm bg-green-100 text-green-700 rounded-md hover:bg-green-200"
+                >
+                  Edit
+                </button>
+                <button className="flex-1 px-3 py-2 text-sm bg-red-100 text-red-700 rounded-md hover:bg-red-200">
+                  Delete
+                </button>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+      
+      {/* Desktop Table View */}
+      <div className="hidden md:block mt-6 bg-white shadow overflow-hidden sm:rounded-md">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>

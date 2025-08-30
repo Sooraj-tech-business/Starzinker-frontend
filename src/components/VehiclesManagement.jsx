@@ -161,8 +161,22 @@ export default function VehiclesManagement({ branches, onEditVehicle, onAddVehic
   // Analytics calculations
   const analytics = {
     total: vehicles.length,
-    expired: vehicles.filter(v => isExpired(v.licenseExpiry) || isExpired(v.insuranceExpiry)).length,
-    expiringSoon: vehicles.filter(v => isExpiringSoon(v.licenseExpiry) || isExpiringSoon(v.insuranceExpiry)).length,
+    expired: (() => {
+      let count = 0;
+      vehicles.forEach(v => {
+        if (isExpired(v.licenseExpiry)) count++;
+        if (isExpired(v.insuranceExpiry)) count++;
+      });
+      return count;
+    })(),
+    expiringSoon: (() => {
+      let count = 0;
+      vehicles.forEach(v => {
+        if (isExpiringSoon(v.licenseExpiry)) count++;
+        if (isExpiringSoon(v.insuranceExpiry)) count++;
+      });
+      return count;
+    })(),
     valid: vehicles.filter(v => !isExpired(v.licenseExpiry) && !isExpired(v.insuranceExpiry) && !isExpiringSoon(v.licenseExpiry) && !isExpiringSoon(v.insuranceExpiry)).length,
     licenseExpired: vehicles.filter(v => isExpired(v.licenseExpiry)).length,
     insuranceExpired: vehicles.filter(v => isExpired(v.insuranceExpiry)).length,
@@ -414,14 +428,7 @@ export default function VehiclesManagement({ branches, onEditVehicle, onAddVehic
               <span className={`ml-2 py-0.5 px-2.5 rounded-full text-xs font-medium ${
                 analytics.expired > 0 ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-900'
               }`}>
-                {(() => {
-                  let totalDocs = 0;
-                  vehicles.forEach(vehicle => {
-                    if (vehicle.licenseExpiry) totalDocs++;
-                    if (vehicle.insuranceExpiry) totalDocs++;
-                  });
-                  return totalDocs;
-                })()}
+                {analytics.expired}
               </span>
             </button>
           </nav>
@@ -524,31 +531,104 @@ export default function VehiclesManagement({ branches, onEditVehicle, onAddVehic
       {activeView === 'documents' && (
         <>
           {/* Expired Documents Table */}
-          <div className="bg-white rounded-xl shadow-xl border border-red-200 overflow-hidden mb-6">
-          <div className="bg-gradient-to-r from-red-500 to-red-600 px-6 py-5">
-            <h3 className="text-xl font-bold text-white flex items-center">
-              <div className="bg-white bg-opacity-20 rounded-full p-2 mr-3">
-                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-              <div>
-                <div>Expired Vehicle Documents</div>
-                <div className="text-red-100 text-sm font-normal">Urgent Action Required • {(() => {
-                  const today = new Date();
-                  let expired = 0;
-                  vehicles.forEach(vehicle => {
-                    if (vehicle.licenseExpiry && new Date(vehicle.licenseExpiry) < today) expired++;
-                    if (vehicle.insuranceExpiry && new Date(vehicle.insuranceExpiry) < today) expired++;
-                  });
-                  return expired;
-                })()} documents</div>
-              </div>
-            </h3>
-          </div>
+          <div className="bg-white shadow-xl rounded-xl border border-gray-100 overflow-hidden mb-6">
+            <div className="bg-gradient-to-r from-red-500 to-red-600 px-6 py-5">
+              <h3 className="text-xl font-bold text-white flex items-center">
+                <div className="bg-white bg-opacity-20 rounded-full p-2 mr-3">
+                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <div>
+                  <div>Expired Vehicle Documents</div>
+                  <div className="text-red-100 text-sm font-normal">Urgent Action Required • {analytics.expired} documents</div>
+                </div>
+              </h3>
+            </div>
 
-          <div className="overflow-x-auto">
-            <table className="min-w-full">
+            {/* Mobile Card View */}
+            <div className="block md:hidden">
+              {(() => {
+                const today = new Date();
+                const expiredDocs = [];
+                
+                filteredVehicles.forEach(vehicle => {
+                  const docs = [
+                    { type: 'Istimara', expiry: vehicle.licenseExpiry },
+                    { type: 'Insurance', expiry: vehicle.insuranceExpiry }
+                  ];
+                  
+                  docs.forEach(doc => {
+                    if (doc.expiry) {
+                      const expiryDate = new Date(doc.expiry);
+                      const daysLeft = Math.ceil((expiryDate - today) / (1000 * 60 * 60 * 24));
+                      
+                      if (daysLeft < 0) {
+                        expiredDocs.push({
+                          vehicle,
+                          documentType: doc.type,
+                          expiryDate: doc.expiry,
+                          daysLeft
+                        });
+                      }
+                    }
+                  });
+                });
+                
+                const expiredStartIndex = (expiredDocsPage - 1) * docsPerPage;
+                const paginatedExpiredDocs = expiredDocs.slice(expiredStartIndex, expiredStartIndex + docsPerPage);
+                
+                return (
+                  <div className="divide-y divide-gray-200">
+                    {paginatedExpiredDocs.map((item, index) => (
+                      <div key={index} className="p-4 hover:bg-gray-50">
+                        <div className="flex items-center space-x-3 mb-3">
+                          <div className="flex-shrink-0 h-10 w-10 bg-red-100 rounded-full flex items-center justify-center">
+                            <span className="text-sm font-medium text-red-800">
+                              {item.vehicle.type ? item.vehicle.type.substring(0, 2).toUpperCase() : 'VE'}
+                            </span>
+                          </div>
+                          <div className="flex-1">
+                            <div className="text-sm font-medium text-gray-900">{item.vehicle.type}</div>
+                            <div className="text-sm text-gray-500">{item.vehicle.licenseNumber}</div>
+                          </div>
+                        </div>
+                        
+                        <div className="grid grid-cols-2 gap-3 text-sm mb-3">
+                          <div>
+                            <span className="text-gray-500">Branch:</span>
+                            <div className="font-medium">{item.vehicle.branchName}</div>
+                          </div>
+                          <div>
+                            <span className="text-gray-500">Document:</span>
+                            <div className="font-medium">{item.documentType}</div>
+                          </div>
+                          <div>
+                            <span className="text-gray-500">Expired:</span>
+                            <div className="font-medium">{new Date(item.expiryDate).toLocaleDateString()}</div>
+                          </div>
+                          <div>
+                            <span className="text-gray-500">Overdue:</span>
+                            <div className="font-medium text-red-600">{Math.abs(item.daysLeft)} days ago</div>
+                          </div>
+                        </div>
+                        
+                        <button 
+                          onClick={() => onEditVehicle(item.vehicle)}
+                          className="w-full px-3 py-2 text-sm bg-green-100 text-green-700 rounded-md hover:bg-green-200"
+                        >
+                          Edit Vehicle
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                );
+              })()}
+            </div>
+
+            {/* Desktop Table View */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="min-w-full">
               <thead className="bg-gradient-to-r from-gray-50 to-gray-100">
                 <tr>
                   <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
@@ -649,8 +729,13 @@ export default function VehiclesManagement({ branches, onEditVehicle, onAddVehic
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{item.documentType}</td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{new Date(item.expiryDate).toLocaleDateString()}</td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-red-600 font-medium">{Math.abs(item.daysLeft)} days ago</td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-indigo-600">
-                              <button className="px-2 py-1 bg-green-100 text-green-700 rounded hover:bg-green-200" onClick={() => onEditVehicle(item.vehicle)}>Edit</button>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                              <button 
+                                onClick={() => onEditVehicle(item.vehicle)}
+                                className="text-blue-600 hover:text-blue-900"
+                              >
+                                Edit
+                              </button>
                             </td>
                           </tr>
                         ))}
@@ -691,39 +776,109 @@ export default function VehiclesManagement({ branches, onEditVehicle, onAddVehic
           </div>
 
           {/* Expiring Soon Documents Table */}
-          <div className="bg-white rounded-xl shadow-xl border border-orange-200 overflow-hidden">
-          <div className="bg-gradient-to-r from-orange-500 to-amber-500 px-6 py-5">
-            <h3 className="text-xl font-bold text-white flex items-center">
-              <div className="bg-white bg-opacity-20 rounded-full p-2 mr-3">
-                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
-                </svg>
-              </div>
-              <div>
-                <div>Vehicle Documents Expiring Soon</div>
-                <div className="text-orange-100 text-sm font-normal">Renewal Required • {(() => {
-                  const today = new Date();
-                  const thirtyDaysFromNow = new Date();
-                  thirtyDaysFromNow.setDate(thirtyDaysFromNow.getDate() + 30);
-                  let expiring = 0;
-                  vehicles.forEach(vehicle => {
-                    if (vehicle.licenseExpiry) {
-                      const expiry = new Date(vehicle.licenseExpiry);
-                      if (expiry >= today && expiry <= thirtyDaysFromNow) expiring++;
-                    }
-                    if (vehicle.insuranceExpiry) {
-                      const expiry = new Date(vehicle.insuranceExpiry);
-                      if (expiry >= today && expiry <= thirtyDaysFromNow) expiring++;
+          <div className="bg-white shadow-xl rounded-xl border border-gray-100 overflow-hidden">
+            <div className="bg-gradient-to-r from-orange-500 to-amber-500 px-6 py-5">
+              <h3 className="text-xl font-bold text-white flex items-center">
+                <div className="bg-white bg-opacity-20 rounded-full p-2 mr-3">
+                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                  </svg>
+                </div>
+                <div>
+                  <div>Vehicle Documents Expiring Soon</div>
+                  <div className="text-orange-100 text-sm font-normal">Renewal Required • {analytics.expiringSoon} documents</div>
+                </div>
+              </h3>
+            </div>
+            
+            {/* Mobile Card View */}
+            <div className="block md:hidden">
+              {(() => {
+                const today = new Date();
+                const expiringSoonDocs = [];
+                
+                filteredVehicles.forEach(vehicle => {
+                  const docs = [
+                    { type: 'Istimara', expiry: vehicle.licenseExpiry },
+                    { type: 'Insurance', expiry: vehicle.insuranceExpiry }
+                  ];
+                  
+                  docs.forEach(doc => {
+                    if (doc.expiry) {
+                      const expiryDate = new Date(doc.expiry);
+                      const daysLeft = Math.ceil((expiryDate - today) / (1000 * 60 * 60 * 24));
+                      
+                      if (daysLeft >= 0 && daysLeft <= 30) {
+                        expiringSoonDocs.push({
+                          vehicle,
+                          documentType: doc.type,
+                          expiryDate: doc.expiry,
+                          daysLeft
+                        });
+                      }
                     }
                   });
-                  return expiring;
-                })()} documents</div>
-              </div>
-            </h3>
-          </div>
-            
-          <div className="overflow-x-auto">
-            <table className="min-w-full">
+                });
+                
+                const expiringSoonStartIndex = (expiringSoonDocsPage - 1) * docsPerPage;
+                const paginatedExpiringSoonDocs = expiringSoonDocs.slice(expiringSoonStartIndex, expiringSoonStartIndex + docsPerPage);
+                
+                return (
+                  <div className="divide-y divide-gray-200">
+                    {paginatedExpiringSoonDocs.map((item, index) => (
+                      <div key={index} className="p-4 hover:bg-gray-50">
+                        <div className="flex items-center space-x-3 mb-3">
+                          <div className="flex-shrink-0 h-10 w-10 bg-yellow-100 rounded-full flex items-center justify-center">
+                            <span className="text-sm font-medium text-yellow-800">
+                              {item.vehicle.type ? item.vehicle.type.substring(0, 2).toUpperCase() : 'VE'}
+                            </span>
+                          </div>
+                          <div className="flex-1">
+                            <div className="text-sm font-medium text-gray-900">{item.vehicle.type}</div>
+                            <div className="text-sm text-gray-500">{item.vehicle.licenseNumber}</div>
+                          </div>
+                          <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
+                            item.daysLeft <= 7 ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800'
+                          }`}>
+                            {item.daysLeft <= 7 ? 'Critical' : 'Warning'}
+                          </span>
+                        </div>
+                        
+                        <div className="grid grid-cols-2 gap-3 text-sm mb-3">
+                          <div>
+                            <span className="text-gray-500">Branch:</span>
+                            <div className="font-medium">{item.vehicle.branchName}</div>
+                          </div>
+                          <div>
+                            <span className="text-gray-500">Document:</span>
+                            <div className="font-medium">{item.documentType}</div>
+                          </div>
+                          <div>
+                            <span className="text-gray-500">Expires:</span>
+                            <div className="font-medium">{new Date(item.expiryDate).toLocaleDateString()}</div>
+                          </div>
+                          <div>
+                            <span className="text-gray-500">Time Left:</span>
+                            <div className="font-medium text-orange-600">{item.daysLeft} days</div>
+                          </div>
+                        </div>
+                        
+                        <button 
+                          onClick={() => onEditVehicle(item.vehicle)}
+                          className="w-full px-3 py-2 text-sm bg-green-100 text-green-700 rounded-md hover:bg-green-200"
+                        >
+                          Edit Vehicle
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                );
+              })()}
+            </div>
+
+            {/* Desktop Table View */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="min-w-full">
               <thead className="bg-gradient-to-r from-gray-50 to-gray-100">
                 <tr>
                   <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
@@ -823,16 +978,21 @@ export default function VehiclesManagement({ branches, onEditVehicle, onAddVehic
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{item.vehicle.branchName}</td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{item.documentType}</td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{new Date(item.expiryDate).toLocaleDateString()}</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{new Date(item.expiryDate).toLocaleDateString()}</td>
                             <td className="px-6 py-4 whitespace-nowrap">
                               <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
                                 item.daysLeft <= 7 ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800'
                               }`}>
-                                {item.daysLeft <= 7 ? 'Critical' : 'Warning'}
+                                {item.daysLeft} days left
                               </span>
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{item.daysLeft} days</td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-indigo-600">
-                              <button className="px-2 py-1 bg-green-100 text-green-700 rounded hover:bg-green-200" onClick={() => onEditVehicle(item.vehicle)}>Edit</button>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                              <button 
+                                onClick={() => onEditVehicle(item.vehicle)}
+                                className="text-blue-600 hover:text-blue-900"
+                              >
+                                Edit
+                              </button>
                             </td>
                           </tr>
                         ))}
@@ -876,9 +1036,84 @@ export default function VehiclesManagement({ branches, onEditVehicle, onAddVehic
 
       {/* Data Table */}
       {activeView === 'vehicles' && filteredVehicles.length > 0 ? (
-        <div className="bg-white shadow overflow-hidden sm:rounded-lg">
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
+        <>
+          {/* Mobile Card View */}
+          <div className="block md:hidden space-y-4 mb-6">
+            {paginatedVehicles.map((vehicle, index) => (
+              <div key={index} className="bg-white rounded-lg shadow border border-gray-200 overflow-hidden">
+                <div className="p-4">
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex items-center space-x-3">
+                      <div className="flex-shrink-0 h-12 w-12 bg-indigo-100 rounded-full flex items-center justify-center">
+                        <span className="text-sm font-medium text-indigo-800">
+                          {vehicle.type ? vehicle.type.substring(0, 2).toUpperCase() : 'VE'}
+                        </span>
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-semibold text-gray-900">{vehicle.type || 'Vehicle'}</h3>
+                        <p className="text-sm text-gray-600">{vehicle.licenseNumber}</p>
+                        <p className="text-sm text-gray-500">{vehicle.branchName}</p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="mb-4">
+                    <h4 className="text-sm font-medium text-gray-700 mb-2">Document Status</h4>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <span className="text-xs text-gray-500">Istimara:</span>
+                        <div className="mt-1">
+                          <span className={`px-2 py-1 text-xs font-semibold rounded-full ${getStatusBadgeClass(vehicle.licenseExpiry)}`}>
+                            {getStatusText(vehicle.licenseExpiry)}
+                          </span>
+                          <div className="text-xs text-gray-500 mt-1">
+                            {vehicle.licenseExpiry ? new Date(vehicle.licenseExpiry).toLocaleDateString() : 'N/A'}
+                          </div>
+                        </div>
+                      </div>
+                      <div>
+                        <span className="text-xs text-gray-500">Insurance:</span>
+                        <div className="mt-1">
+                          <span className={`px-2 py-1 text-xs font-semibold rounded-full ${getStatusBadgeClass(vehicle.insuranceExpiry)}`}>
+                            {getStatusText(vehicle.insuranceExpiry)}
+                          </span>
+                          <div className="text-xs text-gray-500 mt-1">
+                            {vehicle.insuranceExpiry ? new Date(vehicle.insuranceExpiry).toLocaleDateString() : 'N/A'}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="flex space-x-2">
+                    <button
+                      onClick={() => setSelectedVehicle(vehicle)}
+                      className="flex-1 px-3 py-2 text-sm bg-indigo-100 text-indigo-700 rounded-md hover:bg-indigo-200"
+                    >
+                      View
+                    </button>
+                    <button
+                      onClick={() => onEditVehicle(vehicle)}
+                      className="flex-1 px-3 py-2 text-sm bg-green-100 text-green-700 rounded-md hover:bg-green-200"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => handleDeleteVehicleLocal(vehicle.licenseNumber, vehicle.branchId)}
+                      className="flex-1 px-3 py-2 text-sm bg-red-100 text-red-700 rounded-md hover:bg-red-200"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+          
+          {/* Desktop Table View */}
+          <div className="hidden md:block bg-white shadow overflow-hidden sm:rounded-lg">
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
                   <th 
@@ -986,13 +1221,14 @@ export default function VehiclesManagement({ branches, onEditVehicle, onAddVehic
                 </td>
               </tr>
                 ))}
-              </tbody>
-            </table>
+                </tbody>
+              </table>
+            </div>
           </div>
           
           {/* Pagination */}
           {totalPages > 1 && (
-            <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+            <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6 mt-4 rounded-lg shadow">
               <div className="flex-1 flex justify-between sm:hidden">
                 <button
                   onClick={() => setCurrentPage(currentPage - 1)}
@@ -1040,7 +1276,7 @@ export default function VehiclesManagement({ branches, onEditVehicle, onAddVehic
               </div>
             </div>
           )}
-        </div>
+        </>
       ) : activeView === 'vehicles' && vehicles?.length > 0 ? (
         <div className="bg-white shadow sm:rounded-lg p-6 text-center">
           <p className="text-gray-500">No vehicles match your search criteria</p>

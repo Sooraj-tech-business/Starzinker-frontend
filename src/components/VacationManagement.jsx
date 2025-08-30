@@ -257,8 +257,104 @@ export default function VacationManagement({ users }) {
         </div>
       </div>
 
-      {/* Vacation Table */}
-      <div className="bg-white shadow overflow-hidden sm:rounded-md">
+      {/* Mobile Card View */}
+      <div className="block md:hidden space-y-4 mb-6">
+        {currentVacations.map((vacation) => {
+          const daysRemaining = calculateDaysRemaining(vacation.startDate, vacation.endDate);
+          const totalDays = getTotalDays(vacation.startDate, vacation.endDate);
+          const status = getVacationStatus(vacation.startDate, vacation.endDate);
+          const employee = users?.find(user => user._id === vacation.employeeId);
+          
+          return (
+            <div key={vacation._id} className="bg-white rounded-lg shadow border border-gray-200 overflow-hidden">
+              <div className="p-4">
+                <div className="flex items-center space-x-3 mb-3">
+                  <div className="flex-shrink-0">
+                    {employee?.documents?.profilePicture?.url ? (
+                      <img
+                        className="h-12 w-12 rounded-full object-cover"
+                        src={employee.documents.profilePicture.url}
+                        alt={vacation.employeeName}
+                      />
+                    ) : (
+                      <div className="h-12 w-12 rounded-full bg-gray-300 flex items-center justify-center">
+                        <svg className="h-6 w-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-lg font-semibold text-gray-900">{vacation.employeeName}</h3>
+                    <p className="text-sm text-gray-600">{employee?.designation || 'N/A'}</p>
+                    <p className="text-sm text-gray-500">{employee?.workLocation || employee?.branch || 'N/A'}</p>
+                  </div>
+                  <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
+                    status === 'Active' ? 'bg-green-100 text-green-800' :
+                    status === 'Upcoming' ? 'bg-yellow-100 text-yellow-800' :
+                    'bg-gray-100 text-gray-800'
+                  }`}>
+                    {status}
+                  </span>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-3 mb-3 text-sm">
+                  <div>
+                    <span className="text-gray-500">Start Date:</span>
+                    <div className="font-medium">{new Date(vacation.startDate).toLocaleDateString()}</div>
+                  </div>
+                  <div>
+                    <span className="text-gray-500">End Date:</span>
+                    <div className="font-medium">{new Date(vacation.endDate).toLocaleDateString()}</div>
+                  </div>
+                  <div>
+                    <span className="text-gray-500">Duration:</span>
+                    <div className="font-medium">{totalDays} days</div>
+                  </div>
+                  <div>
+                    <span className="text-gray-500">Remaining:</span>
+                    <div className={`font-medium ${
+                      daysRemaining > 0 ? 'text-blue-600' : 'text-gray-500'
+                    }`}>
+                      {daysRemaining > 0 ? `${daysRemaining} days` : 'Completed'}
+                    </div>
+                  </div>
+                </div>
+                
+                {vacation.reason && (
+                  <div className="mb-3">
+                    <span className="text-gray-500 text-sm">Reason:</span>
+                    <div className="text-sm text-gray-700 mt-1">{vacation.reason}</div>
+                  </div>
+                )}
+                
+                <div className="flex space-x-2">
+                  <button
+                    onClick={() => handleEdit(vacation)}
+                    className="flex-1 px-3 py-2 text-sm bg-indigo-100 text-indigo-700 rounded-md hover:bg-indigo-200"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => handleDelete(vacation._id)}
+                    className="flex-1 px-3 py-2 text-sm bg-red-100 text-red-700 rounded-md hover:bg-red-200"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+        {currentVacations.length === 0 && (
+          <div className="text-center py-8 text-gray-500">
+            {filteredVacations.length === 0 ? 'No vacation records found' : 'No results match your search'}
+          </div>
+        )}
+      </div>
+      
+      {/* Desktop Table View */}
+      <div className="hidden md:block bg-white shadow overflow-hidden sm:rounded-md">
         <table className="min-w-full divide-y divide-gray-200 table-fixed">
           <thead className="bg-gray-50">
             <tr>

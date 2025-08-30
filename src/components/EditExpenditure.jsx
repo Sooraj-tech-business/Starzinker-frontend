@@ -6,6 +6,8 @@ export default function EditExpenditure({ expenditure, onClose, onUpdateExpendit
     branchName: '',
     date: '',
     income: '',
+    onlineDeliveries: [{ platform: '', amount: '', description: '' }],
+    deliveryMoney: '',
     expenses: [{ category: '', amount: '', description: '' }],
     submittedBy: '',
     notes: ''
@@ -26,7 +28,12 @@ export default function EditExpenditure({ expenditure, onClose, onUpdateExpendit
         expenses: expenditure.expenses.map(exp => ({
           ...exp,
           amount: exp.amount.toString()
-        }))
+        })),
+        onlineDeliveries: expenditure.onlineDeliveries?.length > 0 ? expenditure.onlineDeliveries.map(del => ({
+          ...del,
+          amount: del.amount.toString()
+        })) : [{ platform: '', amount: '', description: '' }],
+        deliveryMoney: (expenditure.deliveryMoney || 0).toString()
       });
     }
   }, [expenditure]);
@@ -63,6 +70,24 @@ export default function EditExpenditure({ expenditure, onClose, onUpdateExpendit
     setFormData({ ...formData, expenses: updatedExpenses });
   };
 
+  const handleDeliveryChange = (index, field, value) => {
+    const updatedDeliveries = [...formData.onlineDeliveries];
+    updatedDeliveries[index] = { ...updatedDeliveries[index], [field]: value };
+    setFormData({ ...formData, onlineDeliveries: updatedDeliveries });
+  };
+
+  const addDeliveryItem = () => {
+    setFormData({
+      ...formData,
+      onlineDeliveries: [...formData.onlineDeliveries, { platform: '', amount: '', description: '' }]
+    });
+  };
+
+  const removeDeliveryItem = (index) => {
+    const updatedDeliveries = formData.onlineDeliveries.filter((_, i) => i !== index);
+    setFormData({ ...formData, onlineDeliveries: updatedDeliveries });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     
@@ -72,7 +97,12 @@ export default function EditExpenditure({ expenditure, onClose, onUpdateExpendit
       expenses: formData.expenses.map(exp => ({
         ...exp,
         amount: parseFloat(exp.amount) || 0
-      }))
+      })),
+      onlineDeliveries: formData.onlineDeliveries.map(del => ({
+        ...del,
+        amount: parseFloat(del.amount) || 0
+      })),
+      deliveryMoney: parseFloat(formData.deliveryMoney) || 0
     };
     
     await onUpdateExpenditure(expenditureData);
@@ -80,6 +110,8 @@ export default function EditExpenditure({ expenditure, onClose, onUpdateExpendit
   };
 
   const totalExpenses = formData.expenses.reduce((total, exp) => total + (parseFloat(exp.amount) || 0), 0);
+  const totalOnlineDelivery = formData.onlineDeliveries.reduce((total, del) => total + (parseFloat(del.amount) || 0), 0);
+  const totalDeliveryMoney = parseFloat(formData.deliveryMoney) || 0;
   const earnings = (parseFloat(formData.income) || 0) - totalExpenses;
 
   return (
@@ -146,6 +178,93 @@ export default function EditExpenditure({ expenditure, onClose, onUpdateExpendit
               value={formData.submittedBy}
               onChange={handleChange}
               className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-red-800 focus:border-red-800 sm:text-sm"
+            />
+          </div>
+        </div>
+
+        {/* Online Delivery Income */}
+        <div>
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-lg font-medium text-gray-900">Online Delivery Income</h3>
+            <button
+              type="button"
+              onClick={addDeliveryItem}
+              className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
+            >
+              Add Delivery
+            </button>
+          </div>
+          
+          <div className="space-y-4">
+            {formData.onlineDeliveries.map((delivery, index) => (
+              <div key={index} className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 border border-blue-200 rounded-lg bg-blue-50">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Platform*</label>
+                  <select
+                    value={delivery.platform}
+                    onChange={(e) => handleDeliveryChange(index, 'platform', e.target.value)}
+                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                    required
+                  >
+                    <option value="">Select Platform</option>
+                    <option value="Talabat">Talabat</option>
+                    <option value="Keeta">Keeta</option>
+                    <option value="Snoonu">Snoonu</option>
+                    <option value="ATM">ATM</option>
+                  </select>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Amount (QR)*</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={delivery.amount}
+                    onChange={(e) => handleDeliveryChange(index, 'amount', e.target.value)}
+                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                    required
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Description</label>
+                  <input
+                    type="text"
+                    value={delivery.description}
+                    onChange={(e) => handleDeliveryChange(index, 'description', e.target.value)}
+                    placeholder="e.g., Daily delivery earnings"
+                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  />
+                </div>
+                
+                <div className="flex items-end">
+                  <button
+                    type="button"
+                    onClick={() => removeDeliveryItem(index)}
+                    disabled={formData.onlineDeliveries.length === 1}
+                    className="px-3 py-2 bg-red-100 text-red-700 text-sm rounded hover:bg-red-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Remove
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Delivery Money */}
+        <div>
+          <h3 className="text-lg font-medium text-gray-900 mb-4">Delivery Money</h3>
+          <div className="p-4 border border-purple-200 rounded-lg bg-purple-50">
+            <label className="block text-sm font-medium text-gray-700">Total Delivery Money (QR)</label>
+            <input
+              type="number"
+              name="deliveryMoney"
+              step="0.01"
+              value={formData.deliveryMoney}
+              onChange={handleChange}
+              placeholder="Enter total delivery money"
+              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm"
             />
           </div>
         </div>
@@ -218,10 +337,18 @@ export default function EditExpenditure({ expenditure, onClose, onUpdateExpendit
         {/* Summary */}
         <div className="bg-gray-50 p-4 rounded-lg">
           <h3 className="text-lg font-medium text-gray-900 mb-3">Summary</h3>
-          <div className="grid grid-cols-3 gap-4 text-center">
+          <div className="grid grid-cols-5 gap-4 text-center">
             <div>
               <div className="text-2xl font-bold text-green-600">{parseFloat(formData.income) || 0} QR</div>
               <div className="text-sm text-gray-600">Income</div>
+            </div>
+            <div>
+              <div className="text-2xl font-bold text-blue-600">{totalOnlineDelivery.toFixed(2)} QR</div>
+              <div className="text-sm text-gray-600">Online Delivery</div>
+            </div>
+            <div>
+              <div className="text-2xl font-bold text-purple-600">{totalDeliveryMoney.toFixed(2)} QR</div>
+              <div className="text-sm text-gray-600">Delivery Money</div>
             </div>
             <div>
               <div className="text-2xl font-bold text-red-600">{totalExpenses.toFixed(2)} QR</div>

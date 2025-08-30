@@ -31,7 +31,7 @@ export default function ViewExpenditure({ expenditure, onClose }) {
       </div>
       
       <div className="p-8">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Financial Summary */}
           <div className="bg-gray-50 rounded-lg p-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
@@ -44,6 +44,14 @@ export default function ViewExpenditure({ expenditure, onClose }) {
               <div className="flex justify-between py-3 border-b border-gray-200">
                 <span className="font-medium text-gray-600">Income</span>
                 <span className="text-2xl font-bold text-green-600">{formatCurrency(expenditure.income)}</span>
+              </div>
+              <div className="flex justify-between py-3 border-b border-gray-200">
+                <span className="font-medium text-gray-600">Online Delivery</span>
+                <span className="text-2xl font-bold text-blue-600">{formatCurrency(expenditure.totalOnlineDelivery || 0)}</span>
+              </div>
+              <div className="flex justify-between py-3 border-b border-gray-200">
+                <span className="font-medium text-gray-600">Delivery Money</span>
+                <span className="text-2xl font-bold text-purple-600">{formatCurrency(expenditure.deliveryMoney || 0)}</span>
               </div>
               <div className="flex justify-between py-3 border-b border-gray-200">
                 <span className="font-medium text-gray-600">Total Expenses</span>
@@ -61,6 +69,35 @@ export default function ViewExpenditure({ expenditure, onClose }) {
               </div>
             </div>
           </div>
+
+          {/* Online Delivery Details */}
+          <div className="bg-gray-50 rounded-lg p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+              <svg className="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+              </svg>
+              Online Delivery Breakdown
+            </h3>
+            <div className="space-y-3">
+              {expenditure.onlineDeliveries?.length > 0 ? (
+                expenditure.onlineDeliveries.map((delivery, index) => (
+                  <div key={index} className="flex justify-between items-center py-2 border-b border-gray-200">
+                    <div>
+                      <div className="font-medium text-gray-900">{delivery.platform}</div>
+                      {delivery.description && (
+                        <div className="text-sm text-gray-500">{delivery.description}</div>
+                      )}
+                    </div>
+                    <span className="font-semibold text-blue-600">{formatCurrency(delivery.amount)}</span>
+                  </div>
+                ))
+              ) : (
+                <div className="text-gray-500 text-center py-4">No online delivery income recorded</div>
+              )}
+            </div>
+          </div>
+
+
 
           {/* Expense Details */}
           <div className="bg-gray-50 rounded-lg p-6">

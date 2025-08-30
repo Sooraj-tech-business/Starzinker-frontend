@@ -149,59 +149,59 @@ export default function BranchManagement({ branches, users, onEditBranch, onView
         </div>
       </div>
       {/* Analytics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
-        <div className="bg-gradient-to-br from-indigo-500 via-purple-500 to-indigo-600 p-4 rounded-xl shadow-lg text-white transform hover:scale-105 transition-all duration-200">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-4 mb-6">
+        <div className="bg-gradient-to-br from-indigo-500 via-purple-500 to-indigo-600 p-3 md:p-4 rounded-xl shadow-lg text-white transform hover:scale-105 transition-all duration-200">
           <div className="flex items-center justify-between">
             <div>
-              <div className="text-2xl font-bold">{analytics.total}</div>
-              <div className="text-sm opacity-90">Total Branches</div>
-              <div className="text-xs opacity-75 mt-1">{analytics.activeBranches} active</div>
+              <div className="text-xl md:text-2xl font-bold">{analytics.total}</div>
+              <div className="text-xs md:text-sm opacity-90">Total Branches</div>
+              <div className="text-xs opacity-75 mt-1 hidden md:block">{analytics.activeBranches} active</div>
             </div>
-            <div className="text-3xl opacity-80">
+            <div className="text-2xl md:text-3xl opacity-80">
               🏢
             </div>
           </div>
         </div>
-        <div className="bg-gradient-to-br from-emerald-500 via-green-500 to-teal-600 p-4 rounded-xl shadow-lg text-white transform hover:scale-105 transition-all duration-200">
+        <div className="bg-gradient-to-br from-emerald-500 via-green-500 to-teal-600 p-3 md:p-4 rounded-xl shadow-lg text-white transform hover:scale-105 transition-all duration-200">
           <div className="flex items-center justify-between">
             <div>
-              <div className="text-2xl font-bold">{analytics.totalEmployees}</div>
-              <div className="text-sm opacity-90">Total Employees</div>
-              <div className="text-xs opacity-75 mt-1">Avg {analytics.avgEmployeesPerBranch} per branch</div>
+              <div className="text-xl md:text-2xl font-bold">{analytics.totalEmployees}</div>
+              <div className="text-xs md:text-sm opacity-90">Employees</div>
+              <div className="text-xs opacity-75 mt-1 hidden md:block">Avg {analytics.avgEmployeesPerBranch} per branch</div>
             </div>
-            <div className="text-3xl opacity-80">
+            <div className="text-2xl md:text-3xl opacity-80">
               👥
             </div>
           </div>
         </div>
-        <div className="bg-gradient-to-br from-blue-500 via-cyan-500 to-blue-600 p-4 rounded-xl shadow-lg text-white transform hover:scale-105 transition-all duration-200">
+        <div className="bg-gradient-to-br from-blue-500 via-cyan-500 to-blue-600 p-3 md:p-4 rounded-xl shadow-lg text-white transform hover:scale-105 transition-all duration-200">
           <div className="flex items-center justify-between">
             <div>
-              <div className="text-2xl font-bold">{analytics.totalVehicles}</div>
-              <div className="text-sm opacity-90">Total Vehicles</div>
-              <div className="text-xs opacity-75 mt-1">Fleet management</div>
+              <div className="text-xl md:text-2xl font-bold">{analytics.totalVehicles}</div>
+              <div className="text-xs md:text-sm opacity-90">Vehicles</div>
+              <div className="text-xs opacity-75 mt-1 hidden md:block">Fleet management</div>
             </div>
-            <div className="text-3xl opacity-80">
+            <div className="text-2xl md:text-3xl opacity-80">
               🚗
             </div>
           </div>
         </div>
-        <div className="bg-gradient-to-br from-orange-500 via-amber-500 to-orange-600 p-4 rounded-xl shadow-lg text-white transform hover:scale-105 transition-all duration-200">
+        <div className="bg-gradient-to-br from-orange-500 via-amber-500 to-orange-600 p-3 md:p-4 rounded-xl shadow-lg text-white transform hover:scale-105 transition-all duration-200">
           <div className="flex items-center justify-between">
             <div>
-              <div className="text-2xl font-bold">{analytics.totalDocuments}</div>
-              <div className="text-sm opacity-90">Total Documents</div>
-              <div className="text-xs opacity-75 mt-1">Compliance tracking</div>
+              <div className="text-xl md:text-2xl font-bold">{analytics.totalDocuments}</div>
+              <div className="text-xs md:text-sm opacity-90">Documents</div>
+              <div className="text-xs opacity-75 mt-1 hidden md:block">Compliance tracking</div>
             </div>
-            <div className="text-3xl opacity-80">
+            <div className="text-2xl md:text-3xl opacity-80">
               📄
             </div>
           </div>
         </div>
-        <div className="bg-gradient-to-br from-red-500 via-pink-500 to-red-600 p-4 rounded-xl shadow-lg text-white transform hover:scale-105 transition-all duration-200">
+        <div className="bg-gradient-to-br from-red-500 via-pink-500 to-red-600 p-3 md:p-4 rounded-xl shadow-lg text-white transform hover:scale-105 transition-all duration-200 col-span-2 md:col-span-1">
           <div className="flex items-center justify-between">
             <div>
-              <div className="text-2xl font-bold">
+              <div className="text-xl md:text-2xl font-bold">
                 {(() => {
                   const today = new Date();
                   const thirtyDaysFromNow = new Date(Date.now() + 30*24*60*60*1000);
@@ -217,10 +217,10 @@ export default function BranchManagement({ branches, users, onEditBranch, onView
                   return expiringCount;
                 })()
               }</div>
-              <div className="text-sm opacity-90">Expiring Docs</div>
-              <div className="text-xs opacity-75 mt-1">Need attention</div>
+              <div className="text-xs md:text-sm opacity-90">Expiring Docs</div>
+              <div className="text-xs opacity-75 mt-1 hidden md:block">Need attention</div>
             </div>
-            <div className="text-3xl opacity-80">
+            <div className="text-2xl md:text-3xl opacity-80">
               ⚠️
             </div>
           </div>
@@ -409,9 +409,102 @@ export default function BranchManagement({ branches, users, onEditBranch, onView
         </div>
       </div>
 
-      {/* Branch Management Table */}
+      {/* Mobile Card View */}
+      {activeView === 'branches' && (
+        <div className="block md:hidden space-y-4 mb-6">
+          {paginatedBranches.map((branch, index) => {
+            const colors = [
+              'from-blue-400 to-blue-600',
+              'from-emerald-400 to-green-600', 
+              'from-purple-400 to-purple-600',
+              'from-pink-400 to-pink-600',
+              'from-indigo-400 to-indigo-600',
+              'from-teal-400 to-teal-600',
+              'from-orange-400 to-orange-600'
+            ];
+            const colorClass = colors[index % colors.length];
+            
+            return (
+              <div key={index} className="bg-white rounded-lg shadow border border-gray-200 overflow-hidden">
+                <div className="p-4">
+                  <div className="flex items-center space-x-3 mb-3">
+                    <div className="flex-shrink-0">
+                      {branch.branchDocuments?.logoDocument?.url ? (
+                        <img 
+                          src={branch.branchDocuments.logoDocument.url} 
+                          alt={`${branch.name} logo`}
+                          className="h-12 w-12 rounded-full object-cover shadow-lg"
+                        />
+                      ) : (
+                        <div className={`h-12 w-12 rounded-full bg-gradient-to-br ${colorClass} flex items-center justify-center shadow-lg`}>
+                          <span className="text-lg font-bold text-white">
+                            {branch.name.charAt(0).toUpperCase()}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-lg font-semibold text-gray-900">{branch.name}</h3>
+                      <p className="text-sm text-gray-600">{branch.location || 'N/A'}</p>
+                      <p className="text-sm text-gray-500">{branch.manager || 'No Manager'}</p>
+                    </div>
+                    <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
+                      (users?.filter(user => user.branch === branch.name).length || 0) > 0 
+                        ? 'bg-green-100 text-green-800' 
+                        : 'bg-orange-100 text-orange-800'
+                    }`}>
+                      {(users?.filter(user => user.branch === branch.name).length || 0) > 0 ? 'Active' : 'Inactive'}
+                    </span>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-3 mb-3 text-sm">
+                    <div>
+                      <span className="text-gray-500">Contact:</span>
+                      <div className="font-medium">{branch.contactNumber || 'N/A'}</div>
+                    </div>
+                    <div>
+                      <span className="text-gray-500">Email:</span>
+                      <div className="font-medium text-xs">{branch.email || 'N/A'}</div>
+                    </div>
+                    <div>
+                      <span className="text-gray-500">Employees:</span>
+                      <div className="font-medium">{users?.filter(user => user.workLocation === branch.name).length || 0}</div>
+                    </div>
+                    <div>
+                      <span className="text-gray-500">Vehicles:</span>
+                      <div className="font-medium">{branch.vehicles?.length || 0}</div>
+                    </div>
+                  </div>
+                  
+                  <div className="mb-3">
+                    <span className="text-gray-500 text-sm">Address:</span>
+                    <div className="text-sm text-gray-700">{branch.address || 'No address'}</div>
+                  </div>
+                  
+                  <div className="flex space-x-2">
+                    <button
+                      onClick={() => onViewBranch && onViewBranch(branch)}
+                      className="flex-1 px-3 py-2 text-sm bg-emerald-100 text-emerald-700 rounded-md hover:bg-emerald-200"
+                    >
+                      View
+                    </button>
+                    <button
+                      onClick={() => onEditBranch && onEditBranch(branch._id)}
+                      className="flex-1 px-3 py-2 text-sm bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200"
+                    >
+                      Edit
+                    </button>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+      
+      {/* Desktop Table View */}
       {activeView === 'branches' && filteredBranches.length > 0 ? (
-        <div className="bg-white shadow-xl rounded-xl border border-gray-100 overflow-hidden">
+        <div className="hidden md:block bg-white shadow-xl rounded-xl border border-gray-100 overflow-hidden">
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gradient-to-r from-blue-50 to-indigo-50">
@@ -819,7 +912,101 @@ export default function BranchManagement({ branches, users, onEditBranch, onView
               </div>
             </div>
           </div>
-          <table className="min-w-full divide-y divide-gray-200">
+          {/* Mobile Card View */}
+          <div className="block md:hidden">
+            {(() => {
+              const expiredRows = [];
+              const today = new Date();
+              
+              branches?.forEach(branch => {
+                const docs = [
+                  { type: 'Company CR', typeKey: 'cr', number: branch.crNumber, expiry: branch.crExpiry },
+                  { type: 'Ruksa License', typeKey: 'ruksa', number: branch.ruksaNumber, expiry: branch.ruksaExpiry },
+                  { type: 'Computer Card', typeKey: 'computerCard', number: branch.computerCardNumber, expiry: branch.computerCardExpiry },
+                  { type: 'Certification', typeKey: 'certification', number: branch.certificationNumber, expiry: branch.certificationExpiry }
+                ];
+                
+                docs.forEach(doc => {
+                  if (doc.expiry) {
+                    const expiryDate = new Date(doc.expiry);
+                    const daysLeft = Math.ceil((expiryDate - today) / (1000 * 60 * 60 * 24));
+                    
+                    if (daysLeft < 0) {
+                      expiredRows.push({ branch, docType: doc.type, typeKey: doc.typeKey, docNumber: doc.number || 'N/A', expiryDate: doc.expiry, daysLeft });
+                    }
+                  }
+                });
+              });
+              
+              let filteredRows = expiredRows;
+              if (documentSearchTerm) {
+                filteredRows = filteredRows.filter(row => 
+                  row.branch.name.toLowerCase().includes(documentSearchTerm.toLowerCase()) ||
+                  row.branch.location?.toLowerCase().includes(documentSearchTerm.toLowerCase())
+                );
+              }
+              if (documentFilter !== 'all') {
+                filteredRows = filteredRows.filter(row => row.typeKey === documentFilter);
+              }
+              
+              const startIndex = (documentCurrentPage - 1) * documentItemsPerPage;
+              const paginatedRows = filteredRows.slice(startIndex, startIndex + documentItemsPerPage);
+              
+              return (
+                <div className="divide-y divide-gray-200">
+                  {paginatedRows.sort((a, b) => a.daysLeft - b.daysLeft).map((row, index) => (
+                    <div key={index} className="p-4 hover:bg-red-50">
+                      <div className="flex items-center space-x-3 mb-3">
+                        <div className="flex-shrink-0 h-10 w-10 bg-red-500 rounded-full flex items-center justify-center">
+                          <span className="text-sm font-medium text-white">
+                            {row.branch.name.charAt(0).toUpperCase()}
+                          </span>
+                        </div>
+                        <div className="flex-1">
+                          <div className="text-sm font-medium text-gray-900">{row.branch.name}</div>
+                          <div className="text-sm text-gray-500">{row.branch.location || 'No location'}</div>
+                        </div>
+                        <span className="px-2 py-1 text-xs font-medium rounded bg-red-100 text-red-800">
+                          {row.docType}
+                        </span>
+                      </div>
+                      
+                      <div className="grid grid-cols-2 gap-3 text-sm mb-3">
+                        <div>
+                          <span className="text-gray-500">Document #:</span>
+                          <div className="font-medium">{row.docNumber}</div>
+                        </div>
+                        <div>
+                          <span className="text-gray-500">Expired:</span>
+                          <div className="font-medium">{new Date(row.expiryDate).toLocaleDateString()}</div>
+                        </div>
+                        <div>
+                          <span className="text-gray-500">Manager:</span>
+                          <div className="font-medium">{row.branch.manager || 'N/A'}</div>
+                        </div>
+                        <div>
+                          <span className="text-gray-500">Overdue:</span>
+                          <div className="bg-red-500 text-white px-2 py-1 rounded text-xs font-medium inline-block">
+                            {Math.abs(row.daysLeft)} days
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <button 
+                        onClick={() => onEditBranch && onEditBranch(row.branch._id)} 
+                        className="w-full px-3 py-2 text-sm bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200"
+                      >
+                        Update Document
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              );
+            })()}
+          </div>
+          
+          {/* Desktop Table View */}
+          <table className="hidden md:table min-w-full divide-y divide-gray-200">
             <thead className="bg-gradient-to-r from-gray-50 to-gray-100">
               <tr>
                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
@@ -1092,7 +1279,106 @@ export default function BranchManagement({ branches, users, onEditBranch, onView
               </div>
             </div>
           </div>
-          <table className="min-w-full divide-y divide-gray-200">
+          {/* Mobile Card View */}
+          <div className="block md:hidden">
+            {(() => {
+              const expiringRows = [];
+              const today = new Date();
+              const thirtyDaysFromNow = new Date(Date.now() + 30*24*60*60*1000);
+              
+              branches?.forEach(branch => {
+                const docs = [
+                  { type: 'Company CR', typeKey: 'cr', number: branch.crNumber, expiry: branch.crExpiry },
+                  { type: 'Ruksa License', typeKey: 'ruksa', number: branch.ruksaNumber, expiry: branch.ruksaExpiry },
+                  { type: 'Computer Card', typeKey: 'computerCard', number: branch.computerCardNumber, expiry: branch.computerCardExpiry },
+                  { type: 'Certification', typeKey: 'certification', number: branch.certificationNumber, expiry: branch.certificationExpiry }
+                ];
+                
+                docs.forEach(doc => {
+                  if (doc.expiry) {
+                    const expiryDate = new Date(doc.expiry);
+                    const daysLeft = Math.ceil((expiryDate - today) / (1000 * 60 * 60 * 24));
+                    
+                    if (daysLeft >= 0 && daysLeft <= 30) {
+                      expiringRows.push({ branch, docType: doc.type, typeKey: doc.typeKey, docNumber: doc.number || 'N/A', expiryDate: doc.expiry, daysLeft });
+                    }
+                  }
+                });
+              });
+              
+              let filteredRows = expiringRows;
+              if (expiringSoonSearchTerm) {
+                filteredRows = filteredRows.filter(row => 
+                  row.branch.name.toLowerCase().includes(expiringSoonSearchTerm.toLowerCase()) ||
+                  row.branch.location?.toLowerCase().includes(expiringSoonSearchTerm.toLowerCase())
+                );
+              }
+              if (expiringSoonFilter !== 'all') {
+                filteredRows = filteredRows.filter(row => row.typeKey === expiringSoonFilter);
+              }
+              
+              const startIndex = (expiringSoonCurrentPage - 1) * documentItemsPerPage;
+              const paginatedRows = filteredRows.slice(startIndex, startIndex + documentItemsPerPage);
+              
+              return (
+                <div className="divide-y divide-gray-200">
+                  {paginatedRows.sort((a, b) => a.daysLeft - b.daysLeft).map((row, index) => (
+                    <div key={index} className="p-4 hover:bg-orange-50">
+                      <div className="flex items-center space-x-3 mb-3">
+                        <div className="flex-shrink-0 h-10 w-10 bg-orange-500 rounded-full flex items-center justify-center">
+                          <span className="text-sm font-medium text-white">
+                            {row.branch.name.charAt(0).toUpperCase()}
+                          </span>
+                        </div>
+                        <div className="flex-1">
+                          <div className="text-sm font-medium text-gray-900">{row.branch.name}</div>
+                          <div className="text-sm text-gray-500">{row.branch.location || 'No location'}</div>
+                        </div>
+                        <span className="px-2 py-1 text-xs font-medium rounded bg-orange-100 text-orange-800">
+                          {row.docType}
+                        </span>
+                      </div>
+                      
+                      <div className="grid grid-cols-2 gap-3 text-sm mb-3">
+                        <div>
+                          <span className="text-gray-500">Document #:</span>
+                          <div className="font-medium">{row.docNumber}</div>
+                        </div>
+                        <div>
+                          <span className="text-gray-500">Expires:</span>
+                          <div className="font-medium">{new Date(row.expiryDate).toLocaleDateString()}</div>
+                        </div>
+                        <div>
+                          <span className="text-gray-500">Manager:</span>
+                          <div className="font-medium">{row.branch.manager || 'N/A'}</div>
+                        </div>
+                        <div>
+                          <span className="text-gray-500">Time Left:</span>
+                          <div className={`px-2 py-1 rounded text-xs font-medium inline-block ${
+                            row.daysLeft <= 7 ? 'bg-red-100 text-red-700' : 
+                            row.daysLeft <= 15 ? 'bg-orange-100 text-orange-700' : 
+                            'bg-yellow-100 text-yellow-700'
+                          }`}>
+                            {row.daysLeft} days
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <button 
+                        onClick={() => onEditBranch && onEditBranch(row.branch._id)} 
+                        className="w-full px-3 py-2 text-sm bg-orange-100 text-orange-700 rounded-md hover:bg-orange-200"
+                      >
+                        Renew Document
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              );
+            })()}
+          </div>
+          
+          {/* Desktop Table View */}
+          <table className="hidden md:table min-w-full divide-y divide-gray-200">
             <thead className="bg-orange-100">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-orange-700 uppercase tracking-wider">
