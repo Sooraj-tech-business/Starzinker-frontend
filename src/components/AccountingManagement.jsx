@@ -894,7 +894,7 @@ export default function AccountingManagement({ expenditures, onAddExpenditure, o
         </div>
 
         {/* Branch Analytics Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-6 gap-6 mb-8">
           <div className="bg-gradient-to-br from-green-500 to-green-600 p-6 rounded-xl shadow-lg text-white">
             <div className="flex items-center justify-between">
               <div>
@@ -908,10 +908,52 @@ export default function AccountingManagement({ expenditures, onAddExpenditure, o
           <div className="bg-gradient-to-br from-blue-500 to-blue-600 p-6 rounded-xl shadow-lg text-white">
             <div className="flex items-center justify-between">
               <div>
-                <div className="text-3xl font-bold">{formatCurrency(branchData.expenditures.reduce((sum, exp) => sum + (exp.totalOnlineDelivery || 0), 0))}</div>
+                <div className="text-3xl font-bold">
+                  {(() => {
+                    const platforms = ['Talabat', 'Keeta', 'Snoonu'];
+                    let total = 0;
+                    branchData.expenditures.forEach(exp => {
+                      if (exp.onlineDeliveries) {
+                        exp.onlineDeliveries.forEach(delivery => {
+                          if (platforms.includes(delivery.platform)) {
+                            total += delivery.amount;
+                          }
+                        });
+                      }
+                    });
+                    return formatCurrency(total);
+                  })()}
+                </div>
                 <div className="text-blue-100 text-sm mt-1">Online Delivery</div>
               </div>
               <div className="text-4xl opacity-80">🚚</div>
+            </div>
+          </div>
+
+          <div className="bg-gradient-to-br from-orange-500 to-orange-600 p-6 rounded-xl shadow-lg text-white">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-3xl font-bold">
+                  {(() => {
+                    let atmTotal = 0;
+                    branchData.expenditures.forEach(exp => {
+                      if (exp.atmIncome) {
+                        atmTotal += exp.atmIncome;
+                      }
+                      if (exp.onlineDeliveries) {
+                        exp.onlineDeliveries.forEach(delivery => {
+                          if (delivery.platform === 'ATM') {
+                            atmTotal += delivery.amount;
+                          }
+                        });
+                      }
+                    });
+                    return formatCurrency(atmTotal);
+                  })()}
+                </div>
+                <div className="text-orange-100 text-sm mt-1">ATM Income</div>
+              </div>
+              <div className="text-4xl opacity-80">🏧</div>
             </div>
           </div>
 

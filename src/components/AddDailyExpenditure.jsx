@@ -7,6 +7,7 @@ export default function AddDailyExpenditure({ onClose, onAddExpenditure, onSaveD
     date: new Date().toISOString().split('T')[0],
     income: '',
     onlineDeliveries: [{ platform: '', amount: '', description: '' }],
+
     deliveryMoney: '',
     expenses: [{ category: '', amount: '', description: '' }],
     submittedBy: isManagerMode ? currentUser?.name || '' : '',
@@ -91,8 +92,11 @@ export default function AddDailyExpenditure({ onClose, onAddExpenditure, onSaveD
         ...del,
         amount: parseFloat(del.amount) || 0
       })),
+
       deliveryMoney: parseFloat(formData.deliveryMoney) || 0
     };
+    
+    console.log('Submitting expenditure data:', expenditureData);
     
     await onAddExpenditure(expenditureData);
     onClose();
@@ -256,6 +260,8 @@ export default function AddDailyExpenditure({ onClose, onAddExpenditure, onSaveD
             ))}
           </div>
         </div>
+
+
 
         {/* Delivery Money */}
         <div>
