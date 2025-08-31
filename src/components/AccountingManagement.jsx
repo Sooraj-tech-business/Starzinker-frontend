@@ -44,6 +44,7 @@ export default function AccountingManagement({ expenditures, onAddExpenditure, o
   const [viewMode, setViewMode] = useState(persistentState.viewMode);
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+  const [showAnalyticsModal, setShowAnalyticsModal] = useState(false);
   
   // Update persistent state when local state changes
   useEffect(() => {
@@ -879,6 +880,19 @@ export default function AccountingManagement({ expenditures, onAddExpenditure, o
           </div>
         </div>
 
+        {/* Analytics Button */}
+        <div className="bg-white p-4 rounded-lg shadow mb-6">
+          <div className="flex justify-between items-center">
+            <h3 className="text-lg font-semibold text-gray-800">Financial Analysis</h3>
+            <button
+              onClick={() => setShowAnalyticsModal(true)}
+              className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+            >
+              View Detailed Analytics
+            </button>
+          </div>
+        </div>
+
         {/* Branch Analytics Cards */}
         <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
           <div className="bg-gradient-to-br from-green-500 to-green-600 p-6 rounded-xl shadow-lg text-white">
@@ -934,200 +948,6 @@ export default function AccountingManagement({ expenditures, onAddExpenditure, o
           </div>
         </div>
 
-        {/* Online Delivery & Delivery Money Analytics */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-          {/* Online Delivery Breakdown */}
-          <div className="bg-white p-6 rounded-xl shadow-lg">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-              <span className="text-2xl mr-2">🚚</span>
-              Online Delivery Breakdown
-            </h3>
-            <div className="space-y-3">
-              {(() => {
-                const platforms = ['Talabat', 'Keeta', 'Snoonu', 'ATM'];
-                const deliveryData = {};
-                branchData.expenditures.forEach(exp => {
-                  if (exp.onlineDeliveries) {
-                    exp.onlineDeliveries.forEach(delivery => {
-                      deliveryData[delivery.platform] = (deliveryData[delivery.platform] || 0) + delivery.amount;
-                    });
-                  }
-                });
-                
-                const totalDelivery = Object.values(deliveryData).reduce((sum, amount) => sum + amount, 0);
-                
-                return platforms.map(platform => {
-                  const amount = deliveryData[platform] || 0;
-                  const percentage = totalDelivery > 0 ? ((amount / totalDelivery) * 100).toFixed(1) : 0;
-                  
-                  if (amount === 0) return null;
-                  
-                  return (
-                    <div key={platform} className="flex justify-between items-center p-3 bg-blue-50 rounded-lg border border-blue-200">
-                      <div>
-                        <div className="font-medium text-gray-900">{platform}</div>
-                        <div className="text-sm text-blue-600">{percentage}% of delivery income</div>
-                      </div>
-                      <div className="text-right">
-                        <div className="text-lg font-bold text-blue-600">{formatCurrency(amount)}</div>
-                      </div>
-                    </div>
-                  );
-                }).filter(Boolean);
-              })()}
-              
-              <div className="mt-4 pt-3 border-t border-gray-200">
-                <div className="flex justify-between items-center p-3 bg-blue-100 rounded-lg">
-                  <span className="font-bold text-blue-800">Total Online Delivery</span>
-                  <span className="text-xl font-bold text-blue-800">
-                    {formatCurrency(branchData.expenditures.reduce((sum, exp) => sum + (exp.totalOnlineDelivery || 0), 0))}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Delivery Money Analytics */}
-          <div className="bg-white p-6 rounded-xl shadow-lg">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-              <span className="text-2xl mr-2">💎</span>
-              Delivery Money Analytics
-            </h3>
-            
-            <div className="text-center p-4 bg-purple-50 rounded-lg border border-purple-200 mb-4">
-              <div className="text-3xl font-bold text-purple-600 mb-2">
-                {formatCurrency(branchData.expenditures.reduce((sum, exp) => sum + (exp.deliveryMoney || 0), 0))}
-              </div>
-              <div className="text-sm text-purple-700">Total Commission Earned</div>
-            </div>
-            
-            <div className="bg-gray-50 rounded-lg p-3 mb-4">
-              <h4 className="text-sm font-semibold text-gray-700 mb-3">Daily Breakdown</h4>
-              <div className="max-h-48 overflow-y-auto space-y-2">
-                {branchData.expenditures
-                  .filter(exp => (exp.deliveryMoney || 0) > 0)
-                  .sort((a, b) => new Date(a.date) - new Date(b.date))
-                  .map((exp, index) => (
-                    <div key={index} className="flex justify-between items-center p-2 bg-white rounded border">
-                      <div>
-                        <div className="text-sm font-medium text-gray-900">
-                          {new Date(exp.date).toLocaleDateString()}
-                        </div>
-                        <div className="text-xs text-gray-500">
-                          Day {new Date(exp.date).getDate()}
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <div className="text-sm font-bold text-purple-600">
-                          {formatCurrency(exp.deliveryMoney || 0)}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                
-                {branchData.expenditures.filter(exp => (exp.deliveryMoney || 0) > 0).length === 0 && (
-                  <div className="text-center text-gray-500 text-sm py-4">
-                    No delivery money recorded
-                  </div>
-                )}
-              </div>
-            </div>
-            
-
-          </div>
-        </div>
-
-        {/* Detailed Analysis Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-          {/* Expense Profile */}
-          <div className="bg-white p-6 rounded-xl shadow-lg">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">All Expense Categories</h3>
-            <div className="max-h-80 overflow-y-auto space-y-2">
-              {(() => {
-                // Consolidate duplicate categories
-                const consolidatedExpenses = {};
-                Object.entries(branchData.expenseBreakdown).forEach(([category, amount]) => {
-                  const normalizedCategory = category.trim().toLowerCase();
-                  const existingKey = Object.keys(consolidatedExpenses).find(key => 
-                    key.toLowerCase() === normalizedCategory
-                  );
-                  
-                  if (existingKey) {
-                    consolidatedExpenses[existingKey] += amount;
-                  } else {
-                    consolidatedExpenses[category] = amount;
-                  }
-                });
-                
-                return Object.entries(consolidatedExpenses)
-                  .sort(([,a], [,b]) => b - a)
-                  .map(([category, amount], index) => {
-                    const percentage = branchData.totalExpenses > 0 ? ((amount / branchData.totalExpenses) * 100).toFixed(1) : 0;
-                    const isTop5 = index < 5;
-                    return (
-                      <div key={category} className={`p-3 rounded-lg border ${isTop5 ? 'bg-blue-50 border-blue-200' : 'bg-gray-50 border-gray-200'}`}>
-                        <div className="flex justify-between items-center mb-2">
-                          <div className="flex items-center">
-                            {isTop5 && <span className="text-xs bg-blue-600 text-white px-2 py-1 rounded-full mr-2">#{index + 1}</span>}
-                            <span className="text-sm font-medium text-gray-800">{category}</span>
-                          </div>
-                          <div className="text-right">
-                            <div className="text-sm font-bold text-gray-900">{formatCurrency(amount)}</div>
-                            <div className="text-xs text-gray-600">{percentage}%</div>
-                          </div>
-                        </div>
-                        <div className="w-full bg-gray-200 rounded-full h-1.5">
-                          <div 
-                            className={`h-1.5 rounded-full ${isTop5 ? 'bg-blue-600' : 'bg-gray-400'}`}
-                            style={{ width: `${Math.max(percentage, 2)}%` }}
-                          ></div>
-                        </div>
-                      </div>
-                    );
-                  });
-              })()}
-            </div>
-            <div className="mt-4 pt-3 border-t border-gray-200 text-center">
-              <div className="text-sm text-gray-600">
-                Total: {formatCurrency(branchData.totalExpenses)} across {Object.keys(branchData.expenseBreakdown).length} categories
-              </div>
-            </div>
-          </div>
-
-          {/* Performance Metrics */}
-          <div className="bg-white p-6 rounded-xl shadow-lg">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">Performance Metrics</h3>
-            <div className="space-y-4">
-              <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                <span className="text-sm font-medium text-gray-700">Profit Margin</span>
-                <span className={`text-lg font-bold ${branchData.totalEarnings >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                  {branchData.totalIncome > 0 ? ((branchData.totalEarnings / branchData.totalIncome) * 100).toFixed(1) : 0}%
-                </span>
-              </div>
-              <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                <span className="text-sm font-medium text-gray-700">Expense Ratio</span>
-                <span className="text-lg font-bold text-orange-600">
-                  {branchData.totalIncome > 0 ? ((branchData.totalExpenses / branchData.totalIncome) * 100).toFixed(1) : 0}%
-                </span>
-              </div>
-              <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                <span className="text-sm font-medium text-gray-700">Revenue per Day</span>
-                <span className="text-lg font-bold text-blue-600">
-                  {formatCurrency(branchData.recordCount > 0 ? (branchData.totalIncome / branchData.recordCount) : 0)}
-                </span>
-              </div>
-              <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                <span className="text-sm font-medium text-gray-700">Cost per Day</span>
-                <span className="text-lg font-bold text-red-600">
-                  {formatCurrency(branchData.recordCount > 0 ? (branchData.totalExpenses / branchData.recordCount) : 0)}
-                </span>
-              </div>
-            </div>
-          </div>
-
-
-        </div>
-
         {/* PDF Download Section */}
         <div className="bg-white p-6 rounded-xl shadow-lg mb-8">
           <div className="flex justify-between items-center">
@@ -1146,124 +966,123 @@ export default function AccountingManagement({ expenditures, onAddExpenditure, o
             </button>
           </div>
         </div>
-
-        {/* Income Breakdown Visualization */}
-        <div className="bg-white p-6 rounded-xl shadow-lg mb-8">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">Income Distribution Analysis</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Visual Breakdown */}
-            <div>
-              <div className="mb-4">
-                <div className="flex justify-between items-center mb-2">
-                  <span className="text-sm font-medium text-gray-700">Total Income</span>
-                  <span className="text-sm font-bold text-gray-900">{formatCurrency(branchData.totalIncome)} (100%)</span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-8 relative overflow-hidden">
-                  <div 
-                    className="bg-red-500 h-8 absolute left-0 flex items-center justify-center text-white text-xs font-bold"
-                    style={{ width: `${branchData.totalIncome > 0 ? (branchData.totalExpenses / branchData.totalIncome) * 100 : 0}%` }}
-                  >
-                    {branchData.totalIncome > 0 ? ((branchData.totalExpenses / branchData.totalIncome) * 100).toFixed(1) : 0}%
-                  </div>
-                  <div 
-                    className={`${branchData.totalEarnings >= 0 ? 'bg-green-500' : 'bg-orange-500'} h-8 absolute flex items-center justify-center text-white text-xs font-bold`}
-                    style={{ 
-                      left: `${branchData.totalIncome > 0 ? (branchData.totalExpenses / branchData.totalIncome) * 100 : 0}%`,
-                      width: `${branchData.totalIncome > 0 ? Math.abs(branchData.totalEarnings / branchData.totalIncome) * 100 : 0}%` 
-                    }}
-                  >
-                    {branchData.totalIncome > 0 ? Math.abs((branchData.totalEarnings / branchData.totalIncome) * 100).toFixed(1) : 0}%
-                  </div>
-                </div>
-                <div className="flex justify-between mt-2 text-xs">
-                  <span className="text-red-600 font-medium">Expenses</span>
-                  <span className={`font-medium ${branchData.totalEarnings >= 0 ? 'text-green-600' : 'text-orange-600'}`}>
-                    Net {branchData.totalEarnings >= 0 ? 'Profit' : 'Loss'}
-                  </span>
-                </div>
-              </div>
+        {/* Analytics Modal */}
+        <WideModal isOpen={showAnalyticsModal} onClose={() => setShowAnalyticsModal(false)}>
+          <div className="max-h-[90vh] overflow-y-auto">
+            <div className="bg-indigo-600 px-6 py-4 rounded-t-lg">
+              <h2 className="text-2xl font-bold text-white">Detailed Analytics - {branchData.name}</h2>
+              <p className="text-indigo-100">{months.find(m => m.value === parseInt(selectedMonth))?.label} {selectedYear}</p>
             </div>
             
-            {/* User-Friendly Summary Cards */}
-            <div className="space-y-3">
-              <div className="bg-gradient-to-r from-blue-50 to-blue-100 p-4 rounded-lg border border-blue-200">
-                <div className="text-center">
-                  <div className="text-3xl font-bold text-blue-600">{formatCurrency(branchData.totalIncome)}</div>
-                  <div className="text-sm font-medium text-blue-800">Total Revenue</div>
-                  <div className="text-xs text-blue-600 mt-1">100% of Income</div>
+            <div className="p-6">
+              {/* Online Delivery & Delivery Money Analytics */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                {/* Online Delivery Breakdown */}
+                <div className="bg-white p-6 rounded-xl shadow-lg">
+                  <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                    <span className="text-2xl mr-2">🚚</span>
+                    Online Delivery Breakdown
+                  </h3>
+                  <div className="space-y-3">
+                    {(() => {
+                      const platforms = ['Talabat', 'Keeta', 'Snoonu', 'ATM'];
+                      const deliveryData = {};
+                      branchData.expenditures.forEach(exp => {
+                        if (exp.onlineDeliveries) {
+                          exp.onlineDeliveries.forEach(delivery => {
+                            deliveryData[delivery.platform] = (deliveryData[delivery.platform] || 0) + delivery.amount;
+                          });
+                        }
+                      });
+                      
+                      const totalDelivery = Object.values(deliveryData).reduce((sum, amount) => sum + amount, 0);
+                      
+                      return platforms.map(platform => {
+                        const amount = deliveryData[platform] || 0;
+                        const percentage = totalDelivery > 0 ? ((amount / totalDelivery) * 100).toFixed(1) : 0;
+                        
+                        if (amount === 0) return null;
+                        
+                        return (
+                          <div key={platform} className="flex justify-between items-center p-3 bg-blue-50 rounded-lg border border-blue-200">
+                            <div>
+                              <div className="font-medium text-gray-900">{platform}</div>
+                              <div className="text-sm text-blue-600">{percentage}% of delivery income</div>
+                            </div>
+                            <div className="text-right">
+                              <div className="text-lg font-bold text-blue-600">{formatCurrency(amount)}</div>
+                            </div>
+                          </div>
+                        );
+                      }).filter(Boolean);
+                    })()}
+                    
+                    <div className="mt-4 pt-3 border-t border-gray-200">
+                      <div className="flex justify-between items-center p-3 bg-blue-100 rounded-lg">
+                        <span className="font-bold text-blue-800">Total Online Delivery</span>
+                        <span className="text-xl font-bold text-blue-800">
+                          {formatCurrency(branchData.expenditures.reduce((sum, exp) => sum + (exp.totalOnlineDelivery || 0), 0))}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Delivery Money Analytics */}
+                <div className="bg-white p-6 rounded-xl shadow-lg">
+                  <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                    <span className="text-2xl mr-2">💎</span>
+                    Delivery Money Analytics
+                  </h3>
+                  
+                  <div className="text-center p-4 bg-purple-50 rounded-lg border border-purple-200 mb-4">
+                    <div className="text-3xl font-bold text-purple-600 mb-2">
+                      {formatCurrency(branchData.expenditures.reduce((sum, exp) => sum + (exp.deliveryMoney || 0), 0))}
+                    </div>
+                    <div className="text-sm text-purple-700">Total Commission Earned</div>
+                  </div>
                 </div>
               </div>
-              
-              <div className="bg-gradient-to-r from-red-50 to-red-100 p-4 rounded-lg border border-red-200">
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-red-600">{formatCurrency(branchData.totalExpenses)}</div>
-                  <div className="text-sm font-medium text-red-800">Total Costs</div>
-                  <div className="text-xs text-red-600 mt-1">
-                    {branchData.totalIncome > 0 ? ((branchData.totalExpenses / branchData.totalIncome) * 100).toFixed(1) : 0}% of Revenue
+
+              {/* Charts Section */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                {Object.keys(branchData.expenseBreakdown).length > 0 && (
+                  <div className="bg-white p-6 rounded-xl shadow-lg">
+                    <h3 className="text-lg font-semibold text-gray-800 mb-4">Expense Breakdown</h3>
+                    <div className="h-80">
+                      <Doughnut {...getExpenseBreakdownChart(branchData.expenseBreakdown)} />
+                    </div>
+                  </div>
+                )}
+
+                <div className="bg-white p-6 rounded-xl shadow-lg">
+                  <h3 className="text-lg font-semibold text-gray-800 mb-4">Income vs Expenses</h3>
+                  <div className="h-80">
+                    <Doughnut {...getIncomeVsExpensesChart(branchData)} />
                   </div>
                 </div>
-              </div>
-              
-              <div className={`bg-gradient-to-r ${branchData.totalEarnings >= 0 ? 'from-green-50 to-green-100 border-green-200' : 'from-orange-50 to-orange-100 border-orange-200'} p-4 rounded-lg border`}>
-                <div className="text-center">
-                  <div className={`text-2xl font-bold ${branchData.totalEarnings >= 0 ? 'text-green-600' : 'text-orange-600'}`}>
-                    {formatCurrency(Math.abs(branchData.totalEarnings))}
+
+                {Object.keys(branchData.expenseBreakdown).length > 0 && (
+                  <div className="bg-white p-6 rounded-xl shadow-lg">
+                    <h3 className="text-lg font-semibold text-gray-800 mb-4">Expense Categories (Bar Chart)</h3>
+                    <div className="h-80">
+                      <Bar {...getExpenseBarChart(branchData.expenseBreakdown)} />
+                    </div>
                   </div>
-                  <div className={`text-sm font-medium ${branchData.totalEarnings >= 0 ? 'text-green-800' : 'text-orange-800'}`}>
-                    Net {branchData.totalEarnings >= 0 ? 'Profit' : 'Loss'}
+                )}
+
+                {branchData.expenditures.length > 1 && (
+                  <div className="bg-white p-6 rounded-xl shadow-lg">
+                    <h3 className="text-lg font-semibold text-gray-800 mb-4">Daily Performance Trend</h3>
+                    <div className="h-80">
+                      <Line {...getBranchDailyTrendChart(branchData.expenditures)} />
+                    </div>
                   </div>
-                  <div className={`text-xs mt-1 ${branchData.totalEarnings >= 0 ? 'text-green-600' : 'text-orange-600'}`}>
-                    {branchData.totalIncome > 0 ? Math.abs((branchData.totalEarnings / branchData.totalIncome) * 100).toFixed(1) : 0}% Profit Margin
-                  </div>
-                </div>
+                )}
               </div>
             </div>
           </div>
-        </div>
-
-        {/* Charts Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-          {/* Expense Breakdown */}
-          {Object.keys(branchData.expenseBreakdown).length > 0 && (
-            <div className="bg-white p-6 rounded-xl shadow-lg">
-              <h3 className="text-lg font-semibold text-gray-800 mb-4">Expense Breakdown</h3>
-              <div className="h-80">
-                <Doughnut {...getExpenseBreakdownChart(branchData.expenseBreakdown)} />
-              </div>
-            </div>
-          )}
-
-          {/* Income vs Expenses */}
-          <div className="bg-white p-6 rounded-xl shadow-lg">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">Income vs Expenses</h3>
-            <div className="h-80">
-              <Doughnut {...getIncomeVsExpensesChart(branchData)} />
-            </div>
-          </div>
-        </div>
-
-        {/* Additional Charts */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-          {/* Expense Bar Chart */}
-          {Object.keys(branchData.expenseBreakdown).length > 0 && (
-            <div className="bg-white p-6 rounded-xl shadow-lg">
-              <h3 className="text-lg font-semibold text-gray-800 mb-4">Expense Categories (Bar Chart)</h3>
-              <div className="h-80">
-                <Bar {...getExpenseBarChart(branchData.expenseBreakdown)} />
-              </div>
-            </div>
-          )}
-
-          {/* Daily Performance Trend */}
-          {branchData.expenditures.length > 1 && (
-            <div className="bg-white p-6 rounded-xl shadow-lg">
-              <h3 className="text-lg font-semibold text-gray-800 mb-4">Daily Performance Trend</h3>
-              <div className="h-80">
-                <Line {...getBranchDailyTrendChart(branchData.expenditures)} />
-              </div>
-            </div>
-          )}
-        </div>
+        </WideModal>
 
         {/* Detailed Records */}
         <div className="bg-white rounded-xl shadow-lg overflow-hidden">
@@ -1452,12 +1271,20 @@ export default function AccountingManagement({ expenditures, onAddExpenditure, o
           <h1 className="text-3xl font-bold text-gray-900">Accounting Dashboard</h1>
           <p className="text-gray-600 mt-1">{months.find(m => m.value === parseInt(selectedMonth))?.label} {selectedYear} Financial Overview</p>
         </div>
-        <button
-          onClick={() => setShowAddExpenditure(true)}
-          className="px-6 py-3 bg-gradient-to-r from-red-800 to-red-900 text-white rounded-lg hover:from-red-900 hover:to-red-800 font-medium shadow-lg transform hover:scale-105 transition-all duration-200"
-        >
-          + Add Daily Expenditure
-        </button>
+        <div className="flex space-x-3">
+          <button
+            onClick={() => setShowAnalyticsModal(true)}
+            className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+          >
+            View Detailed Analytics
+          </button>
+          <button
+            onClick={() => setShowAddExpenditure(true)}
+            className="px-6 py-3 bg-gradient-to-r from-red-800 to-red-900 text-white rounded-lg hover:from-red-900 hover:to-red-800 font-medium shadow-lg transform hover:scale-105 transition-all duration-200"
+          >
+            + Add Daily Expenditure
+          </button>
+        </div>
       </div>
 
       {/* Overall Analytics */}
@@ -1556,115 +1383,7 @@ export default function AccountingManagement({ expenditures, onAddExpenditure, o
         </div>
       </div>
 
-      {/* Advanced Analytics Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-        {/* Overall Expense Breakdown */}
-        <div className="bg-white p-6 rounded-xl shadow-lg">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">Overall Expense Breakdown</h3>
-          <div className="h-96">
-            {Object.keys(getOverallExpenseBreakdown()).length > 0 ? (
-              <Doughnut {...getExpenseBreakdownChart(getOverallExpenseBreakdown())} />
-            ) : (
-              <div className="flex items-center justify-center h-full text-gray-500">
-                No expense data available
-              </div>
-            )}
-          </div>
-        </div>
 
-        {/* Branch Performance Comparison */}
-        <div className="bg-white p-6 rounded-xl shadow-lg">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">Branch Performance Comparison</h3>
-          <div className="h-80">
-            {Object.values(branchAnalytics).length > 0 ? (
-              <Bar {...getBranchPerformanceChart()} />
-            ) : (
-              <div className="flex items-center justify-center h-full text-gray-500">
-                No branch data available
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Daily Trends */}
-        <div className="bg-white p-6 rounded-xl shadow-lg">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">Daily Financial Trends</h3>
-          <div className="h-80">
-            {filteredExpenditures.length > 0 ? (
-              <Line {...getDailyTrendChart()} />
-            ) : (
-              <div className="flex items-center justify-center h-full text-gray-500">
-                No daily data available
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Profit Margin Analysis */}
-        <div className="bg-white p-6 rounded-xl shadow-lg">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">Profit Margin by Branch</h3>
-          <div className="h-80">
-            {Object.values(branchAnalytics).length > 0 ? (
-              <Doughnut {...getProfitMarginChart()} />
-            ) : (
-              <div className="flex items-center justify-center h-full text-gray-500">
-                No branch data available
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* Key Performance Indicators */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <div className="bg-gradient-to-br from-indigo-500 to-indigo-600 p-6 rounded-xl shadow-lg text-white">
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="text-3xl font-bold">
-                {overallAnalytics.totalIncome > 0 ? ((overallAnalytics.totalEarnings / overallAnalytics.totalIncome) * 100).toFixed(1) : 0}%
-              </div>
-              <div className="text-indigo-100 text-sm mt-1">Profit Margin</div>
-            </div>
-            <div className="text-4xl opacity-80">📊</div>
-          </div>
-        </div>
-
-        <div className="bg-gradient-to-br from-teal-500 to-teal-600 p-6 rounded-xl shadow-lg text-white">
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="text-3xl font-bold">
-                {overallAnalytics.recordCount > 0 ? (overallAnalytics.totalIncome / overallAnalytics.recordCount).toFixed(0) : 0}
-              </div>
-              <div className="text-teal-100 text-sm mt-1">Avg Daily Income</div>
-            </div>
-            <div className="text-4xl opacity-80">💹</div>
-          </div>
-        </div>
-
-        <div className="bg-gradient-to-br from-amber-500 to-amber-600 p-6 rounded-xl shadow-lg text-white">
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="text-3xl font-bold">
-                {Object.values(branchAnalytics).filter(b => b.totalEarnings > 0).length}
-              </div>
-              <div className="text-amber-100 text-sm mt-1">Profitable Branches</div>
-            </div>
-            <div className="text-4xl opacity-80">🏆</div>
-          </div>
-        </div>
-
-        <div className="bg-gradient-to-br from-rose-500 to-rose-600 p-6 rounded-xl shadow-lg text-white">
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="text-3xl font-bold">
-                {overallAnalytics.recordCount > 0 ? (overallAnalytics.totalExpenses / overallAnalytics.recordCount).toFixed(0) : 0}
-              </div>
-              <div className="text-rose-100 text-sm mt-1">Avg Daily Expenses</div>
-            </div>
-            <div className="text-4xl opacity-80">💸</div>
-          </div>
-        </div>
-      </div>
 
 
       {/* Branch Cards */}
@@ -1746,6 +1465,73 @@ export default function AccountingManagement({ expenditures, onAddExpenditure, o
           onUpdateExpenditure={handleUpdateExpenditure}
           branches={branches}
         />
+      </WideModal>
+
+      {/* Overview Analytics Modal */}
+      <WideModal isOpen={showAnalyticsModal} onClose={() => setShowAnalyticsModal(false)}>
+        <div className="max-h-[90vh] overflow-y-auto">
+          <div className="bg-indigo-600 px-6 py-4 rounded-t-lg">
+            <h2 className="text-2xl font-bold text-white">Overall Analytics Dashboard</h2>
+            <p className="text-indigo-100">{months.find(m => m.value === parseInt(selectedMonth))?.label} {selectedYear} - All Branches</p>
+          </div>
+          
+          <div className="p-6">
+            {/* Charts Section */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+              <div className="bg-white p-6 rounded-xl shadow-lg">
+                <h3 className="text-lg font-semibold text-gray-800 mb-4">Overall Expense Breakdown</h3>
+                <div className="h-80">
+                  {Object.keys(getOverallExpenseBreakdown()).length > 0 ? (
+                    <Doughnut {...getExpenseBreakdownChart(getOverallExpenseBreakdown())} />
+                  ) : (
+                    <div className="flex items-center justify-center h-full text-gray-500">
+                      No expense data available
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="bg-white p-6 rounded-xl shadow-lg">
+                <h3 className="text-lg font-semibold text-gray-800 mb-4">Branch Performance Comparison</h3>
+                <div className="h-80">
+                  {Object.values(branchAnalytics).length > 0 ? (
+                    <Bar {...getBranchPerformanceChart()} />
+                  ) : (
+                    <div className="flex items-center justify-center h-full text-gray-500">
+                      No branch data available
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="bg-white p-6 rounded-xl shadow-lg">
+                <h3 className="text-lg font-semibold text-gray-800 mb-4">Daily Financial Trends</h3>
+                <div className="h-80">
+                  {filteredExpenditures.length > 0 ? (
+                    <Line {...getDailyTrendChart()} />
+                  ) : (
+                    <div className="flex items-center justify-center h-full text-gray-500">
+                      No daily data available
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="bg-white p-6 rounded-xl shadow-lg">
+                <h3 className="text-lg font-semibold text-gray-800 mb-4">Profit Margin by Branch</h3>
+                <div className="h-80">
+                  {Object.values(branchAnalytics).length > 0 ? (
+                    <Doughnut {...getProfitMarginChart()} />
+                  ) : (
+                    <div className="flex items-center justify-center h-full text-gray-500">
+                      No branch data available
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </WideModal>
     </div>
   );

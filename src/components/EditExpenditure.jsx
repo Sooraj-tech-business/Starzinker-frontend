@@ -7,6 +7,7 @@ export default function EditExpenditure({ expenditure, onClose, onUpdateExpendit
     date: '',
     income: '',
     onlineDeliveries: [{ platform: '', amount: '', description: '' }],
+    atmIncome: '',
     deliveryMoney: '',
     expenses: [{ category: '', amount: '', description: '' }],
     submittedBy: '',
@@ -33,6 +34,7 @@ export default function EditExpenditure({ expenditure, onClose, onUpdateExpendit
           ...del,
           amount: del.amount.toString()
         })) : [{ platform: '', amount: '', description: '' }],
+        atmIncome: (expenditure.atmIncome || 0).toString(),
         deliveryMoney: (expenditure.deliveryMoney || 0).toString()
       });
     }
@@ -102,6 +104,7 @@ export default function EditExpenditure({ expenditure, onClose, onUpdateExpendit
         ...del,
         amount: parseFloat(del.amount) || 0
       })),
+      atmIncome: parseFloat(formData.atmIncome) || 0,
       deliveryMoney: parseFloat(formData.deliveryMoney) || 0
     };
     
@@ -111,6 +114,7 @@ export default function EditExpenditure({ expenditure, onClose, onUpdateExpendit
 
   const totalExpenses = formData.expenses.reduce((total, exp) => total + (parseFloat(exp.amount) || 0), 0);
   const totalOnlineDelivery = formData.onlineDeliveries.reduce((total, del) => total + (parseFloat(del.amount) || 0), 0);
+  const totalAtmIncome = parseFloat(formData.atmIncome) || 0;
   const totalDeliveryMoney = parseFloat(formData.deliveryMoney) || 0;
   const earnings = (parseFloat(formData.income) || 0) - totalExpenses;
 
@@ -185,7 +189,7 @@ export default function EditExpenditure({ expenditure, onClose, onUpdateExpendit
         {/* Online Delivery Income */}
         <div>
           <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-medium text-gray-900">Online Delivery Income</h3>
+            <h3 className="text-lg font-medium text-gray-900">Online Delivery Income (Talabat, Keeta, Snoonu)</h3>
             <button
               type="button"
               onClick={addDeliveryItem}
@@ -210,7 +214,7 @@ export default function EditExpenditure({ expenditure, onClose, onUpdateExpendit
                     <option value="Talabat">Talabat</option>
                     <option value="Keeta">Keeta</option>
                     <option value="Snoonu">Snoonu</option>
-                    <option value="ATM">ATM</option>
+
                   </select>
                 </div>
                 
@@ -249,6 +253,23 @@ export default function EditExpenditure({ expenditure, onClose, onUpdateExpendit
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+
+        {/* ATM Income */}
+        <div>
+          <h3 className="text-lg font-medium text-gray-900 mb-4">ATM Income</h3>
+          <div className="p-4 border border-orange-200 rounded-lg bg-orange-50">
+            <label className="block text-sm font-medium text-gray-700">ATM Income (QR)</label>
+            <input
+              type="number"
+              name="atmIncome"
+              step="0.01"
+              value={formData.atmIncome}
+              onChange={handleChange}
+              placeholder="Enter ATM income"
+              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-orange-500 focus:border-orange-500 sm:text-sm"
+            />
           </div>
         </div>
 
@@ -337,7 +358,7 @@ export default function EditExpenditure({ expenditure, onClose, onUpdateExpendit
         {/* Summary */}
         <div className="bg-gray-50 p-4 rounded-lg">
           <h3 className="text-lg font-medium text-gray-900 mb-3">Summary</h3>
-          <div className="grid grid-cols-5 gap-4 text-center">
+          <div className="grid grid-cols-6 gap-4 text-center">
             <div>
               <div className="text-2xl font-bold text-green-600">{parseFloat(formData.income) || 0} QR</div>
               <div className="text-sm text-gray-600">Income</div>
@@ -345,6 +366,10 @@ export default function EditExpenditure({ expenditure, onClose, onUpdateExpendit
             <div>
               <div className="text-2xl font-bold text-blue-600">{totalOnlineDelivery.toFixed(2)} QR</div>
               <div className="text-sm text-gray-600">Online Delivery</div>
+            </div>
+            <div>
+              <div className="text-2xl font-bold text-orange-600">{totalAtmIncome.toFixed(2)} QR</div>
+              <div className="text-sm text-gray-600">ATM Income</div>
             </div>
             <div>
               <div className="text-2xl font-bold text-purple-600">{totalDeliveryMoney.toFixed(2)} QR</div>
