@@ -370,9 +370,72 @@ export default function EmployeeManagement({ users, onEditUser, onDeleteUser, on
 
       {/* Data Table */}
       {filteredUsers.length > 0 ? (
-        <div className="bg-white shadow-xl rounded-xl border border-gray-100 w-full max-w-full">
-          {/* Table View for All Screen Sizes */}
-          <div className="overflow-x-auto w-full max-w-full">
+        <div className="bg-white shadow-xl rounded-xl border border-gray-100">
+          {/* Mobile Card View */}
+          <div className="block lg:hidden">
+            <div className="divide-y divide-gray-200">
+              {paginatedUsers.map((user, index) => (
+                <div key={index} className="p-4 hover:bg-gray-50">
+                  <div className="flex items-center space-x-3 mb-3">
+                    {user.documents?.profilePicture?.url ? (
+                      <img 
+                        src={user.documents.profilePicture.url} 
+                        alt={user.name}
+                        className="h-12 w-12 rounded-full object-cover border-2 border-gray-200"
+                      />
+                    ) : (
+                      <div className="h-12 w-12 rounded-full bg-gradient-to-br from-indigo-400 to-indigo-600 flex items-center justify-center">
+                        <span className="text-lg font-bold text-white">
+                          {user.name.charAt(0).toUpperCase()}
+                        </span>
+                      </div>
+                    )}
+                    <div className="flex-1">
+                      <div className="text-sm font-semibold text-gray-900">{user.name}</div>
+                      <div className="text-xs text-gray-500">{user.role || 'N/A'}</div>
+                      <div className="text-xs text-gray-400">{user.workLocation || 'No Location'}</div>
+                    </div>
+                    <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+                      user.status === 'Working' ? 'bg-green-100 text-green-800' : 
+                      user.status === 'Active' ? 'bg-blue-100 text-blue-800' :
+                      'bg-gray-100 text-gray-800'
+                    }`}>
+                      {user.status || 'N/A'}
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 text-xs text-gray-600 mb-3">
+                    <div><span className="font-medium">Phone:</span> {user.phone || 'N/A'}</div>
+                    <div><span className="font-medium">QID:</span> {user.qid || 'N/A'}</div>
+                    <div><span className="font-medium">Email:</span> {user.email || 'N/A'}</div>
+                    <div><span className="font-medium">Joined:</span> {formatDate(user.doj)}</div>
+                  </div>
+                  <div className="flex space-x-2">
+                    <button 
+                      onClick={() => onViewUser && onViewUser(user)}
+                      className="flex-1 px-3 py-2 text-xs bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200"
+                    >
+                      View
+                    </button>
+                    <button 
+                      onClick={() => onEditUser && onEditUser(user._id)}
+                      className="flex-1 px-3 py-2 text-xs bg-indigo-100 text-indigo-700 rounded-md hover:bg-indigo-200"
+                    >
+                      Edit
+                    </button>
+                    <button 
+                      onClick={() => onDeleteUser && window.confirm('Are you sure?') && onDeleteUser(user._id)}
+                      className="flex-1 px-3 py-2 text-xs bg-red-100 text-red-700 rounded-md hover:bg-red-200"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+          
+          {/* Desktop Table View */}
+          <div className="hidden lg:block overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gradient-to-r from-gray-50 to-gray-100">
                 <tr>
@@ -732,8 +795,66 @@ export default function EmployeeManagement({ users, onEditUser, onDeleteUser, on
                     </h3>
                   </div>
                   
-                  {/* Table View for Expired Documents */}
-                  <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-red-300 scrollbar-track-red-100">
+                  {/* Mobile Card View for Expired Documents */}
+                  <div className="block lg:hidden">
+                    <div className="divide-y divide-gray-200">
+                      {(() => {
+                        let filtered = analytics.expiredDocs.filter(doc => {
+                          const matchesSearch = doc.name.toLowerCase().includes(expiredSearch.toLowerCase());
+                          const matchesFilter = expiredFilter === 'all' || doc.document === expiredFilter;
+                          return matchesSearch && matchesFilter;
+                        });
+                        
+                        const startIndex = (expiredPage - 1) * docItemsPerPage;
+                        const paginatedDocs = filtered.sort((a, b) => b.daysOverdue - a.daysOverdue).slice(startIndex, startIndex + docItemsPerPage);
+                        
+                        return paginatedDocs.map((doc, index) => (
+                          <div key={index} className="p-4 hover:bg-red-50">
+                            <div className="flex items-center space-x-3 mb-3">
+                              {(() => {
+                                const employee = users.find(u => u.name === doc.name);
+                                return employee?.documents?.profilePicture?.url ? (
+                                  <img 
+                                    src={employee.documents.profilePicture.url} 
+                                    alt={doc.name}
+                                    className="w-10 h-10 rounded-full object-cover border-2 border-red-200"
+                                  />
+                                ) : (
+                                  <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
+                                    <span className="text-red-600 font-bold text-sm">{doc.name.charAt(0).toUpperCase()}</span>
+                                  </div>
+                                );
+                              })()}
+                              <div className="flex-1">
+                                <div className="text-sm font-semibold text-gray-900">{doc.name}</div>
+                                <div className="text-xs text-red-600 capitalize">{doc.document}</div>
+                              </div>
+                              <div className="bg-red-600 text-white px-2 py-1 rounded text-xs font-bold">
+                                {doc.daysOverdue} days overdue
+                              </div>
+                            </div>
+                            <div className="text-xs text-gray-600 mb-3">
+                              <span className="font-medium">Expired:</span> {formatDate(doc.expiryDate)}
+                            </div>
+                            <button
+                              onClick={() => {
+                                const employee = users.find(u => u.name === doc.name);
+                                if (employee && onEditUser) {
+                                  onEditUser(employee._id);
+                                }
+                              }}
+                              className="w-full px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700"
+                            >
+                              Edit Employee
+                            </button>
+                          </div>
+                        ));
+                      })()}
+                    </div>
+                  </div>
+                  
+                  {/* Desktop Table View for Expired Documents */}
+                  <div className="hidden lg:block overflow-x-auto scrollbar-thin scrollbar-thumb-red-300 scrollbar-track-red-100">
                     <table className="min-w-full">
                       <thead className="bg-gradient-to-r from-gray-50 to-gray-100">
                         <tr>
@@ -935,8 +1056,69 @@ export default function EmployeeManagement({ users, onEditUser, onDeleteUser, on
                     </h3>
                   </div>
                   
-                  {/* Table View for Expiring Documents */}
-                  <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-orange-300 scrollbar-track-orange-100">
+                  {/* Mobile Card View for Expiring Documents */}
+                  <div className="block lg:hidden">
+                    <div className="divide-y divide-gray-200">
+                      {(() => {
+                        let filtered = analytics.expiringDocs.filter(doc => {
+                          const matchesSearch = doc.name.toLowerCase().includes(expiringSearch.toLowerCase());
+                          const matchesFilter = expiringFilter === 'all' || doc.document === expiringFilter;
+                          return matchesSearch && matchesFilter;
+                        });
+                        
+                        const startIndex = (expiringPage - 1) * docItemsPerPage;
+                        const paginatedDocs = filtered.sort((a, b) => a.daysLeft - b.daysLeft).slice(startIndex, startIndex + docItemsPerPage);
+                        
+                        return paginatedDocs.map((doc, index) => (
+                          <div key={index} className="p-4 hover:bg-orange-50">
+                            <div className="flex items-center space-x-3 mb-3">
+                              {(() => {
+                                const employee = users.find(u => u.name === doc.name);
+                                return employee?.documents?.profilePicture?.url ? (
+                                  <img 
+                                    src={employee.documents.profilePicture.url} 
+                                    alt={doc.name}
+                                    className="w-10 h-10 rounded-full object-cover border-2 border-orange-200"
+                                  />
+                                ) : (
+                                  <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
+                                    <span className="text-orange-600 font-bold text-sm">{doc.name.charAt(0).toUpperCase()}</span>
+                                  </div>
+                                );
+                              })()}
+                              <div className="flex-1">
+                                <div className="text-sm font-semibold text-gray-900">{doc.name}</div>
+                                <div className="text-xs text-orange-600 capitalize">{doc.document}</div>
+                              </div>
+                              <div className={`px-2 py-1 rounded text-xs font-bold ${
+                                doc.daysLeft <= 7 ? 'bg-red-600 text-white' : 
+                                doc.daysLeft <= 15 ? 'bg-orange-600 text-white' : 'bg-yellow-500 text-white'
+                              }`}>
+                                {doc.daysLeft} days left
+                              </div>
+                            </div>
+                            <div className="text-xs text-gray-600 mb-3">
+                              <span className="font-medium">Expires:</span> {formatDate(doc.expiryDate)}
+                            </div>
+                            <button
+                              onClick={() => {
+                                const employee = users.find(u => u.name === doc.name);
+                                if (employee && onEditUser) {
+                                  onEditUser(employee._id);
+                                }
+                              }}
+                              className="w-full px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700"
+                            >
+                              Edit Employee
+                            </button>
+                          </div>
+                        ));
+                      })()}
+                    </div>
+                  </div>
+                  
+                  {/* Desktop Table View for Expiring Documents */}
+                  <div className="hidden lg:block overflow-x-auto scrollbar-thin scrollbar-thumb-orange-300 scrollbar-track-orange-100">
                     <table className="min-w-full">
                       <thead className="bg-gradient-to-r from-gray-50 to-gray-100">
                         <tr>

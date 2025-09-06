@@ -6,8 +6,12 @@ export default function AddDailyExpenditure({ onClose, onAddExpenditure, onSaveD
     branchName: isManagerMode ? branches[0]?.name || '' : '',
     date: new Date().toISOString().split('T')[0],
     income: '',
-    onlineDeliveries: [{ platform: '', amount: '', description: '' }],
-
+    onlineDeliveries: [
+      { platform: 'Talabat', amount: '', description: '' },
+      { platform: 'Snoonu', amount: '', description: '' },
+      { platform: 'Keeta', amount: '', description: '' },
+      { platform: 'ATM', amount: '', description: '' }
+    ],
     deliveryMoney: '',
     expenses: [{ category: '', amount: '', description: '' }],
     submittedBy: isManagerMode ? currentUser?.name || '' : '',
@@ -20,7 +24,12 @@ export default function AddDailyExpenditure({ onClose, onAddExpenditure, onSaveD
       setFormData({
         ...existingDraft,
         expenses: existingDraft.expenses?.length > 0 ? existingDraft.expenses : [{ category: '', amount: '', description: '' }],
-        onlineDeliveries: existingDraft.onlineDeliveries?.length > 0 ? existingDraft.onlineDeliveries : [{ platform: '', amount: '', description: '' }],
+        onlineDeliveries: existingDraft.onlineDeliveries?.length > 0 ? existingDraft.onlineDeliveries : [
+          { platform: 'Talabat', amount: '', description: '' },
+          { platform: 'Snoonu', amount: '', description: '' },
+          { platform: 'Keeta', amount: '', description: '' },
+          { platform: 'ATM', amount: '', description: '' }
+        ],
         deliveryMoney: existingDraft.deliveryMoney || ''
       });
     }
@@ -118,7 +127,7 @@ export default function AddDailyExpenditure({ onClose, onAddExpenditure, onSaveD
         </button>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-6" autoComplete="off">
         {/* Basic Information */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {!isManagerMode && (
@@ -193,34 +202,21 @@ export default function AddDailyExpenditure({ onClose, onAddExpenditure, onSaveD
 
         {/* Online Delivery Income */}
         <div>
-          <div className="flex justify-between items-center mb-4">
+          <div className="mb-4">
             <h3 className="text-lg font-medium text-gray-900">Online Delivery Income</h3>
-            <button
-              type="button"
-              onClick={addDeliveryItem}
-              className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
-            >
-              Add Delivery
-            </button>
           </div>
           
           <div className="space-y-4">
             {formData.onlineDeliveries.map((delivery, index) => (
-              <div key={index} className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 border border-blue-200 rounded-lg bg-blue-50">
+              <div key={index} className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 border border-blue-200 rounded-lg bg-blue-50">
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Platform*</label>
-                  <select
+                  <input
+                    type="text"
                     value={delivery.platform}
-                    onChange={(e) => handleDeliveryChange(index, 'platform', e.target.value)}
-                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                    required
-                  >
-                    <option value="">Select Platform</option>
-                    <option value="Talabat">Talabat</option>
-                    <option value="Keeta">Keeta</option>
-                    <option value="Snoonu">Snoonu</option>
-                    <option value="ATM">ATM</option>
-                  </select>
+                    readOnly
+                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 bg-gray-100 text-gray-700 sm:text-sm"
+                  />
                 </div>
                 
                 <div>
@@ -246,16 +242,7 @@ export default function AddDailyExpenditure({ onClose, onAddExpenditure, onSaveD
                   />
                 </div>
                 
-                <div className="flex items-end">
-                  <button
-                    type="button"
-                    onClick={() => removeDeliveryItem(index)}
-                    disabled={formData.onlineDeliveries.length === 1}
-                    className="px-3 py-2 bg-red-100 text-red-700 text-sm rounded hover:bg-red-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    Remove
-                  </button>
-                </div>
+
               </div>
             ))}
           </div>
@@ -282,15 +269,8 @@ export default function AddDailyExpenditure({ onClose, onAddExpenditure, onSaveD
 
         {/* Expenses */}
         <div>
-          <div className="flex justify-between items-center mb-4">
+          <div className="mb-4">
             <h3 className="text-lg font-medium text-gray-900">Expenses</h3>
-            <button
-              type="button"
-              onClick={addExpenseItem}
-              className="px-3 py-1 bg-red-800 text-white text-sm rounded hover:bg-red-900"
-            >
-              Add Expense
-            </button>
           </div>
           
           <div className="space-y-4">
@@ -342,6 +322,16 @@ export default function AddDailyExpenditure({ onClose, onAddExpenditure, onSaveD
                 </div>
               </div>
             ))}
+          </div>
+          
+          <div className="mt-4">
+            <button
+              type="button"
+              onClick={addExpenseItem}
+              className="px-3 py-1 bg-red-800 text-white text-sm rounded hover:bg-red-900"
+            >
+              Add Expense
+            </button>
           </div>
         </div>
 
