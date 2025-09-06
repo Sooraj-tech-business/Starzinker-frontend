@@ -3,6 +3,7 @@ import WideModal from './WideModal';
 import AddDailyExpenditure from './AddDailyExpenditure';
 import ViewExpenditure from './ViewExpenditure';
 import EditExpenditure from './EditExpenditure';
+
 import { Doughnut, Line, Bar } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
@@ -143,7 +144,7 @@ export default function AccountingManagement({ expenditures, onAddExpenditure, o
   const formatDate = (dateString) => new Date(dateString).toLocaleDateString();
 
   // PDF Download Function
-  const downloadBranchPDF = (branchData, month, year) => {
+  const downloadBranchPDF = (branchData, month, year, returnContent = false) => {
     const monthName = months.find(m => m.value === parseInt(month))?.label;
     
     // Create simplified PDF content
@@ -408,6 +409,10 @@ export default function AccountingManagement({ expenditures, onAddExpenditure, o
 </body>
 </html>
     `;
+    
+    if (returnContent) {
+      return pdfContent;
+    }
     
     // Create and download PDF
     const blob = new Blob([pdfContent], { type: 'text/html' });
@@ -894,21 +899,56 @@ export default function AccountingManagement({ expenditures, onAddExpenditure, o
         </div>
 
         {/* Branch Analytics Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-6 gap-6 mb-8">
-          <div className="bg-gradient-to-br from-green-500 to-green-600 p-6 rounded-xl shadow-lg text-white">
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="text-3xl font-bold">{formatCurrency(branchData.totalIncome)}</div>
-                <div className="text-green-100 text-sm mt-1">Regular Income</div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+          <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+            <div className="bg-gradient-to-r from-emerald-400 to-green-500 p-4 text-white">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <div className="text-3xl">💰</div>
+                  <div>
+                    <h4 className="font-bold text-lg">Regular Income</h4>
+                  </div>
+                </div>
+                <div className="px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                  Active
+                </div>
               </div>
-              <div className="text-4xl opacity-80">💰</div>
+            </div>
+            <div className="p-4">
+              <div className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-600">Revenue</span>
+                  <span className="font-bold text-lg text-gray-900">{formatCurrency(branchData.totalIncome)}</span>
+                </div>
+              </div>
             </div>
           </div>
 
-          <div className="bg-gradient-to-br from-blue-500 to-blue-600 p-6 rounded-xl shadow-lg text-white">
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="text-3xl font-bold">
+          <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+            <div className="bg-gradient-to-r from-blue-400 to-cyan-500 p-4 text-white">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <div className="text-3xl">🚚</div>
+                  <div>
+                    <h4 className="font-bold text-lg">Online</h4>
+                  </div>
+                </div>
+                <div className={`px-2 py-1 rounded-full text-xs font-medium ${
+                  (() => {
+                    const platforms = ['Talabat', 'Keeta', 'Snoonu'];
+                    let total = 0;
+                    branchData.expenditures.forEach(exp => {
+                      if (exp.onlineDeliveries) {
+                        exp.onlineDeliveries.forEach(delivery => {
+                          if (platforms.includes(delivery.platform)) {
+                            total += delivery.amount;
+                          }
+                        });
+                      }
+                    });
+                    return total > 0 ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800';
+                  })()
+                }`}>
                   {(() => {
                     const platforms = ['Talabat', 'Keeta', 'Snoonu'];
                     let total = 0;
@@ -921,19 +961,101 @@ export default function AccountingManagement({ expenditures, onAddExpenditure, o
                         });
                       }
                     });
-                    return formatCurrency(total);
+                    return total > 0 ? 'Active' : 'No Data';
                   })()}
                 </div>
-                <div className="text-blue-100 text-sm mt-1">Online Delivery</div>
               </div>
-              <div className="text-4xl opacity-80">🚚</div>
+            </div>
+            <div className="p-4">
+              <div className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-600">Revenue</span>
+                  <span className="font-bold text-lg text-gray-900">
+                    {(() => {
+                      const platforms = ['Talabat', 'Keeta', 'Snoonu'];
+                      let total = 0;
+                      branchData.expenditures.forEach(exp => {
+                        if (exp.onlineDeliveries) {
+                          exp.onlineDeliveries.forEach(delivery => {
+                            if (platforms.includes(delivery.platform)) {
+                              total += delivery.amount;
+                            }
+                          });
+                        }
+                      });
+                      return formatCurrency(total);
+                    })()}
+                  </span>
+                </div>
+                
+                {/* Service Breakdown */}
+                <div className="mt-4 grid grid-cols-1 gap-2">
+                  {(() => {
+                    const services = {
+                      Talabat: { icon: '🍔', income: 0 },
+                      Snoonu: { icon: '🛵', income: 0 },
+                      Keeta: { icon: '🥘', income: 0 }
+                    };
+                    
+                    branchData.expenditures.forEach(exp => {
+                      if (exp.onlineDeliveries) {
+                        exp.onlineDeliveries.forEach(delivery => {
+                          if (services[delivery.platform]) {
+                            services[delivery.platform].income += delivery.amount;
+                          }
+                        });
+                      }
+                    });
+                    
+                    return Object.entries(services).map(([name, service]) => (
+                      <div key={name} className="flex items-center justify-between p-1.5 bg-gray-50 rounded-md border">
+                        <div className="flex items-center space-x-1.5">
+                          <span className="text-sm">{service.icon}</span>
+                          <div>
+                            <div className="text-xs font-medium text-gray-900">{name}</div>
+                            <div className={`text-xs ${service.income > 0 ? 'text-green-600' : 'text-gray-500'}`}>
+                              {service.income > 0 ? 'Active' : 'No Data'}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-xs font-bold text-gray-900">{formatCurrency(service.income)}</div>
+                        </div>
+                      </div>
+                    ));
+                  })()}
+                </div>
+              </div>
             </div>
           </div>
 
-          <div className="bg-gradient-to-br from-orange-500 to-orange-600 p-6 rounded-xl shadow-lg text-white">
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="text-3xl font-bold">
+          <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+            <div className="bg-gradient-to-r from-orange-400 to-amber-500 p-4 text-white">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <div className="text-3xl">🏧</div>
+                  <div>
+                    <h4 className="font-bold text-lg">ATM</h4>
+                  </div>
+                </div>
+                <div className={`px-2 py-1 rounded-full text-xs font-medium ${
+                  (() => {
+                    let atmTotal = 0;
+                    branchData.expenditures.forEach(exp => {
+                      if (exp.atmIncome) {
+                        atmTotal += exp.atmIncome;
+                      }
+                      if (exp.onlineDeliveries) {
+                        exp.onlineDeliveries.forEach(delivery => {
+                          if (delivery.platform === 'ATM') {
+                            atmTotal += delivery.amount;
+                          }
+                        });
+                      }
+                    });
+                    return atmTotal > 0 ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800';
+                  })()
+                }`}>
                   {(() => {
                     let atmTotal = 0;
                     branchData.expenditures.forEach(exp => {
@@ -948,64 +1070,144 @@ export default function AccountingManagement({ expenditures, onAddExpenditure, o
                         });
                       }
                     });
-                    return formatCurrency(atmTotal);
+                    return atmTotal > 0 ? 'Active' : 'No Data';
                   })()}
                 </div>
-                <div className="text-orange-100 text-sm mt-1">ATM Income</div>
               </div>
-              <div className="text-4xl opacity-80">🏧</div>
+            </div>
+            <div className="p-4">
+              <div className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-600">Revenue</span>
+                  <span className="font-bold text-lg text-gray-900">
+                    {(() => {
+                      let atmTotal = 0;
+                      branchData.expenditures.forEach(exp => {
+                        if (exp.atmIncome) {
+                          atmTotal += exp.atmIncome;
+                        }
+                        if (exp.onlineDeliveries) {
+                          exp.onlineDeliveries.forEach(delivery => {
+                            if (delivery.platform === 'ATM') {
+                              atmTotal += delivery.amount;
+                            }
+                          });
+                        }
+                      });
+                      return formatCurrency(atmTotal);
+                    })()}
+                  </span>
+                </div>
+              </div>
             </div>
           </div>
 
-          <div className="bg-gradient-to-br from-purple-500 to-purple-600 p-6 rounded-xl shadow-lg text-white">
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="text-3xl font-bold">{formatCurrency(branchData.expenditures.reduce((sum, exp) => sum + (exp.deliveryMoney || 0), 0))}</div>
-                <div className="text-purple-100 text-sm mt-1">Delivery Money</div>
+          <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+            <div className="bg-gradient-to-r from-purple-400 to-violet-500 p-4 text-white">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <div className="text-3xl">💎</div>
+                  <div>
+                    <h4 className="font-bold text-lg">Delivery</h4>
+                  </div>
+                </div>
+                <div className={`px-2 py-1 rounded-full text-xs font-medium ${
+                  branchData.expenditures.reduce((sum, exp) => sum + (exp.deliveryMoney || 0), 0) > 0 ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                }`}>
+                  {branchData.expenditures.reduce((sum, exp) => sum + (exp.deliveryMoney || 0), 0) > 0 ? 'Active' : 'No Data'}
+                </div>
               </div>
-              <div className="text-4xl opacity-80">💎</div>
+            </div>
+            <div className="p-4">
+              <div className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-600">Revenue</span>
+                  <span className="font-bold text-lg text-gray-900">{formatCurrency(branchData.expenditures.reduce((sum, exp) => sum + (exp.deliveryMoney || 0), 0))}</span>
+                </div>
+              </div>
             </div>
           </div>
 
-          <div className="bg-gradient-to-br from-red-500 to-red-600 p-6 rounded-xl shadow-lg text-white">
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="text-3xl font-bold">{formatCurrency(branchData.totalExpenses)}</div>
-                <div className="text-red-100 text-sm mt-1">Total Expenses</div>
-                <div className="text-red-100 text-xs mt-1">{branchData.totalIncome > 0 ? ((branchData.totalExpenses / branchData.totalIncome) * 100).toFixed(1) : 0}% of Income</div>
+          <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+            <div className="bg-gradient-to-r from-red-400 to-rose-500 p-4 text-white">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <div className="text-3xl">💸</div>
+                  <div>
+                    <h4 className="font-bold text-lg">Total Expenses</h4>
+                  </div>
+                </div>
+                <div className="px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                  Active
+                </div>
               </div>
-              <div className="text-4xl opacity-80">💸</div>
+            </div>
+            <div className="p-4">
+              <div className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-600">Amount</span>
+                  <span className="font-bold text-lg text-gray-900">{formatCurrency(branchData.totalExpenses)}</span>
+                </div>
+              </div>
             </div>
           </div>
 
-          <div className={`bg-gradient-to-br ${branchData.totalEarnings >= 0 ? 'from-emerald-500 to-emerald-600' : 'from-orange-500 to-orange-600'} p-6 rounded-xl shadow-lg text-white`}>
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="text-3xl font-bold">{formatCurrency(branchData.totalEarnings)}</div>
-                <div className="text-emerald-100 text-sm mt-1">Net {branchData.totalEarnings >= 0 ? 'Profit' : 'Loss'}</div>
-                <div className="text-emerald-100 text-xs mt-1">{branchData.totalIncome > 0 ? ((branchData.totalEarnings / branchData.totalIncome) * 100).toFixed(1) : 0}% Margin</div>
+          <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+            <div className={`bg-gradient-to-r ${branchData.totalEarnings >= 0 ? 'from-teal-400 to-emerald-500' : 'from-orange-400 to-red-500'} p-4 text-white`}>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <div className="text-3xl">{branchData.totalEarnings >= 0 ? '📈' : '📉'}</div>
+                  <div>
+                    <h4 className="font-bold text-lg">Net {branchData.totalEarnings >= 0 ? 'Profit' : 'Loss'}</h4>
+                  </div>
+                </div>
+                <div className={`px-2 py-1 rounded-full text-xs font-medium ${branchData.totalEarnings >= 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                  {branchData.totalEarnings >= 0 ? 'Profit' : 'Loss'}
+                </div>
               </div>
-              <div className="text-4xl opacity-80">{branchData.totalEarnings >= 0 ? '📈' : '📉'}</div>
+            </div>
+            <div className="p-4">
+              <div className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-600">Amount</span>
+                  <span className="font-bold text-lg text-gray-900">{formatCurrency(Math.abs(branchData.totalEarnings))}</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* PDF Download Section */}
+        {/* PDF Report Section */}
         <div className="bg-white p-6 rounded-xl shadow-lg mb-8">
-          <div className="flex justify-between items-center">
-            <div>
-              <h3 className="text-lg font-semibold text-gray-800">Export Analytics Report</h3>
-              <p className="text-sm text-gray-600 mt-1">Download detailed financial analysis for {branchData.name} - {months.find(m => m.value === parseInt(selectedMonth))?.label} {selectedYear}</p>
+          <div className="flex justify-end items-center">
+            <div className="flex space-x-3">
+              <button
+                onClick={() => {
+                  const monthName = months.find(m => m.value === parseInt(selectedMonth))?.label;
+                  const fullPdfContent = downloadBranchPDF(branchData, selectedMonth, selectedYear, true);
+                  const blob = new Blob([fullPdfContent], { type: 'text/html' });
+                  const url = URL.createObjectURL(blob);
+                  window.open(url, '_blank');
+                  setTimeout(() => URL.revokeObjectURL(url), 1000);
+                }}
+                className="px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 font-medium shadow-lg transform hover:scale-105 transition-all duration-200 flex items-center space-x-2"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                </svg>
+                <span>View Report</span>
+              </button>
+              <button
+                onClick={() => downloadBranchPDF(branchData, selectedMonth, selectedYear)}
+                className="px-4 py-2 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-lg hover:from-green-700 hover:to-green-800 font-medium shadow-lg transform hover:scale-105 transition-all duration-200 flex items-center space-x-2"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                <span>Download</span>
+              </button>
             </div>
-            <button
-              onClick={() => downloadBranchPDF(branchData, selectedMonth, selectedYear)}
-              className="px-6 py-3 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-lg hover:from-green-700 hover:to-green-800 font-medium shadow-lg transform hover:scale-105 transition-all duration-200 flex items-center space-x-2"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
-              <span>Download PDF Report</span>
-            </button>
           </div>
         </div>
         {/* Analytics Modal */}
@@ -1329,55 +1531,90 @@ export default function AccountingManagement({ expenditures, onAddExpenditure, o
         </div>
       </div>
 
-      {/* Overall Analytics */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
-        <div className="bg-gradient-to-br from-green-500 to-green-600 p-6 rounded-xl shadow-lg text-white transform hover:scale-105 transition-all duration-200">
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="text-3xl font-bold">{formatCurrency(overallAnalytics.totalIncome)}</div>
-              <div className="text-green-100 text-sm mt-1">Total Income</div>
+      {/* Enhanced Overall Analytics */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 mb-8">
+        <div className="bg-gradient-to-br from-emerald-400 via-green-500 to-emerald-600 p-5 rounded-2xl shadow-xl text-white transform hover:scale-105 transition-all duration-300 border border-emerald-300">
+          <div className="flex items-start justify-between mb-3">
+            <div className="bg-white bg-opacity-20 p-2 rounded-xl">
+              <div className="text-2xl">💰</div>
             </div>
-            <div className="text-4xl opacity-80">💰</div>
+            <div className="text-right">
+              <div className="text-xs font-medium text-emerald-100 uppercase tracking-wide">Total</div>
+              <div className="text-xs text-emerald-200">Income</div>
+            </div>
+          </div>
+          <div className="text-2xl font-bold mb-1">{formatCurrency(overallAnalytics.totalIncome)}</div>
+          <div className="flex items-center text-emerald-100 text-xs">
+            <div className="w-2 h-2 bg-emerald-200 rounded-full mr-2"></div>
+            All Branches
           </div>
         </div>
 
-        <div className="bg-gradient-to-br from-red-500 to-red-600 p-6 rounded-xl shadow-lg text-white transform hover:scale-105 transition-all duration-200">
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="text-3xl font-bold">{formatCurrency(overallAnalytics.totalExpenses)}</div>
-              <div className="text-red-100 text-sm mt-1">Total Expenses</div>
+        <div className="bg-gradient-to-br from-red-400 via-rose-500 to-red-600 p-5 rounded-2xl shadow-xl text-white transform hover:scale-105 transition-all duration-300 border border-red-300">
+          <div className="flex items-start justify-between mb-3">
+            <div className="bg-white bg-opacity-20 p-2 rounded-xl">
+              <div className="text-2xl">💸</div>
             </div>
-            <div className="text-4xl opacity-80">💸</div>
+            <div className="text-right">
+              <div className="text-xs font-medium text-red-100 uppercase tracking-wide">Total</div>
+              <div className="text-xs text-red-200">Expenses</div>
+            </div>
+          </div>
+          <div className="text-2xl font-bold mb-1">{formatCurrency(overallAnalytics.totalExpenses)}</div>
+          <div className="flex items-center text-red-100 text-xs">
+            <div className="w-2 h-2 bg-red-200 rounded-full mr-2"></div>
+            Operating Costs
           </div>
         </div>
 
-        <div className={`bg-gradient-to-br ${overallAnalytics.totalEarnings >= 0 ? 'from-blue-500 to-blue-600' : 'from-orange-500 to-orange-600'} p-6 rounded-xl shadow-lg text-white transform hover:scale-105 transition-all duration-200`}>
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="text-3xl font-bold">{formatCurrency(overallAnalytics.totalEarnings)}</div>
-              <div className="text-blue-100 text-sm mt-1">Net {overallAnalytics.totalEarnings >= 0 ? 'Profit' : 'Loss'}</div>
+        <div className={`bg-gradient-to-br ${overallAnalytics.totalEarnings >= 0 ? 'from-blue-400 via-cyan-500 to-blue-600 border-blue-300' : 'from-orange-400 via-red-500 to-red-600 border-orange-300'} p-5 rounded-2xl shadow-xl text-white transform hover:scale-105 transition-all duration-300 border`}>
+          <div className="flex items-start justify-between mb-3">
+            <div className="bg-white bg-opacity-20 p-2 rounded-xl">
+              <div className="text-2xl">{overallAnalytics.totalEarnings >= 0 ? '📈' : '📉'}</div>
             </div>
-            <div className="text-4xl opacity-80">{overallAnalytics.totalEarnings >= 0 ? '📈' : '📉'}</div>
+            <div className="text-right">
+              <div className={`text-xs font-medium ${overallAnalytics.totalEarnings >= 0 ? 'text-blue-100' : 'text-orange-100'} uppercase tracking-wide`}>Net</div>
+              <div className={`text-xs ${overallAnalytics.totalEarnings >= 0 ? 'text-blue-200' : 'text-orange-200'}`}>{overallAnalytics.totalEarnings >= 0 ? 'Profit' : 'Loss'}</div>
+            </div>
+          </div>
+          <div className="text-2xl font-bold mb-1">{formatCurrency(Math.abs(overallAnalytics.totalEarnings))}</div>
+          <div className={`flex items-center ${overallAnalytics.totalEarnings >= 0 ? 'text-blue-100' : 'text-orange-100'} text-xs`}>
+            <div className={`w-2 h-2 ${overallAnalytics.totalEarnings >= 0 ? 'bg-blue-200' : 'bg-orange-200'} rounded-full mr-2`}></div>
+            Company Wide
           </div>
         </div>
 
-        <div className="bg-gradient-to-br from-purple-500 to-purple-600 p-6 rounded-xl shadow-lg text-white transform hover:scale-105 transition-all duration-200">
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="text-3xl font-bold">{overallAnalytics.activeBranches}</div>
-              <div className="text-purple-100 text-sm mt-1">Active Branches</div>
+        <div className="bg-gradient-to-br from-purple-400 via-violet-500 to-purple-600 p-5 rounded-2xl shadow-xl text-white transform hover:scale-105 transition-all duration-300 border border-purple-300">
+          <div className="flex items-start justify-between mb-3">
+            <div className="bg-white bg-opacity-20 p-2 rounded-xl">
+              <div className="text-2xl">🏢</div>
             </div>
-            <div className="text-4xl opacity-80">🏢</div>
+            <div className="text-right">
+              <div className="text-xs font-medium text-purple-100 uppercase tracking-wide">Active</div>
+              <div className="text-xs text-purple-200">Branches</div>
+            </div>
+          </div>
+          <div className="text-2xl font-bold mb-1">{overallAnalytics.activeBranches}</div>
+          <div className="flex items-center text-purple-100 text-xs">
+            <div className="w-2 h-2 bg-purple-200 rounded-full mr-2"></div>
+            Operational
           </div>
         </div>
 
-        <div className="bg-gradient-to-br from-gray-600 to-gray-700 p-6 rounded-xl shadow-lg text-white transform hover:scale-105 transition-all duration-200">
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="text-3xl font-bold">{overallAnalytics.recordCount}</div>
-              <div className="text-gray-100 text-sm mt-1">Total Records</div>
+        <div className="bg-gradient-to-br from-slate-400 via-gray-500 to-slate-600 p-5 rounded-2xl shadow-xl text-white transform hover:scale-105 transition-all duration-300 border border-slate-300">
+          <div className="flex items-start justify-between mb-3">
+            <div className="bg-white bg-opacity-20 p-2 rounded-xl">
+              <div className="text-2xl">📊</div>
             </div>
-            <div className="text-4xl opacity-80">📊</div>
+            <div className="text-right">
+              <div className="text-xs font-medium text-slate-100 uppercase tracking-wide">Total</div>
+              <div className="text-xs text-slate-200">Records</div>
+            </div>
+          </div>
+          <div className="text-2xl font-bold mb-1">{overallAnalytics.recordCount}</div>
+          <div className="flex items-center text-slate-100 text-xs">
+            <div className="w-2 h-2 bg-slate-200 rounded-full mr-2"></div>
+            Data Entries
           </div>
         </div>
       </div>
