@@ -202,6 +202,77 @@ export default function TempEmployeeManagement({ tempEmployees, onAddTempEmploye
           {/* Table */}
           {filteredTempEmployees.length > 0 ? (
         <div className="bg-white shadow overflow-hidden sm:rounded-lg">
+          {/* Mobile Card View */}
+          <div className="block lg:hidden">
+            <div className="divide-y divide-gray-200">
+              {paginatedTempEmployees.map((employee, index) => (
+                <div key={index} className="p-4 hover:bg-gray-50">
+                  <div className="flex items-center space-x-3 mb-3">
+                    {employee.documents?.profilePicture?.url ? (
+                      <img 
+                        src={employee.documents.profilePicture.url} 
+                        alt={employee.name}
+                        className="h-12 w-12 rounded-full object-cover border-2 border-gray-200"
+                      />
+                    ) : (
+                      <div className="h-12 w-12 rounded-full bg-orange-500 flex items-center justify-center">
+                        <span className="text-lg font-bold text-white">
+                          {employee.name.charAt(0).toUpperCase()}
+                        </span>
+                      </div>
+                    )}
+                    <div className="flex-1">
+                      <div className="text-sm font-semibold text-gray-900">{employee.name}</div>
+                      <div className="text-xs text-gray-500">{employee.role}</div>
+                      <div className="text-xs text-gray-400">{employee.workLocation}</div>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 text-xs text-gray-600 mb-3">
+                    <div><span className="font-medium">Phone:</span> {employee.phone || 'N/A'}</div>
+                    <div><span className="font-medium">Email:</span> {employee.email}</div>
+                    <div><span className="font-medium">Nationality:</span> {employee.nationality || 'N/A'}</div>
+                    <div>
+                      <span className="font-medium">Documents:</span>
+                      <div className="flex space-x-1 mt-1">
+                        {employee.documents?.qidCopy && (
+                          <span className="px-1 py-0.5 text-xs bg-blue-100 text-blue-800 rounded">QID</span>
+                        )}
+                        {employee.documents?.passportCopy && (
+                          <span className="px-1 py-0.5 text-xs bg-green-100 text-green-800 rounded">Passport</span>
+                        )}
+                        {employee.documents?.medicalCard && (
+                          <span className="px-1 py-0.5 text-xs bg-purple-100 text-purple-800 rounded">Medical</span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex space-x-2">
+                    <button 
+                      onClick={() => handleViewTempEmployee(employee)}
+                      className="flex-1 px-3 py-2 text-xs bg-green-100 text-green-700 rounded-md hover:bg-green-200"
+                    >
+                      View
+                    </button>
+                    <button 
+                      onClick={() => handleEditTempEmployee(employee)}
+                      className="flex-1 px-3 py-2 text-xs bg-indigo-100 text-indigo-700 rounded-md hover:bg-indigo-200"
+                    >
+                      Edit
+                    </button>
+                    <button 
+                      onClick={() => handleDeleteTempEmployee(employee._id)}
+                      className="flex-1 px-3 py-2 text-xs bg-red-100 text-red-700 rounded-md hover:bg-red-200"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+          
+          {/* Desktop Table View */}
+          <div className="hidden lg:block">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
@@ -293,6 +364,7 @@ export default function TempEmployeeManagement({ tempEmployees, onAddTempEmploye
               ))}
             </tbody>
           </table>
+          </div>
         </div>
           ) : (
             <div className="bg-white shadow sm:rounded-lg p-6 text-center">
@@ -406,7 +478,44 @@ export default function TempEmployeeManagement({ tempEmployees, onAddTempEmploye
                     </h3>
                   </div>
                   
-                  <div className="overflow-x-auto">
+                  {/* Mobile Card View */}
+                  <div className="block lg:hidden">
+                    <div className="divide-y divide-gray-200">
+                      {analytics.expiredDocs.sort((a, b) => b.daysOverdue - a.daysOverdue).map((doc, index) => (
+                        <div key={index} className="p-4 hover:bg-red-50">
+                          <div className="flex items-center space-x-3 mb-3">
+                            <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
+                              <span className="text-red-600 font-bold text-sm">{doc.name.charAt(0).toUpperCase()}</span>
+                            </div>
+                            <div className="flex-1">
+                              <div className="text-sm font-semibold text-gray-900">{doc.name}</div>
+                              <div className="text-xs text-red-600 capitalize">{doc.document}</div>
+                            </div>
+                            <div className="bg-red-600 text-white px-2 py-1 rounded text-xs font-bold">
+                              {doc.daysOverdue} days overdue
+                            </div>
+                          </div>
+                          <div className="text-xs text-gray-600 mb-3">
+                            <span className="font-medium">Expired:</span> {formatDate(doc.expiryDate)}
+                          </div>
+                          <button
+                            onClick={() => {
+                              const employee = tempEmployees.find(u => u.name === doc.name);
+                              if (employee) {
+                                handleEditTempEmployee(employee);
+                              }
+                            }}
+                            className="w-full px-4 py-2 bg-orange-600 text-white text-sm font-medium rounded-lg hover:bg-orange-700"
+                          >
+                            Edit Employee
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  {/* Desktop Table View */}
+                  <div className="hidden lg:block overflow-x-auto">
                     <table className="min-w-full">
                       <thead className="bg-gradient-to-r from-gray-50 to-gray-100">
                         <tr>
@@ -480,7 +589,47 @@ export default function TempEmployeeManagement({ tempEmployees, onAddTempEmploye
                     </h3>
                   </div>
                   
-                  <div className="overflow-x-auto">
+                  {/* Mobile Card View */}
+                  <div className="block lg:hidden">
+                    <div className="divide-y divide-gray-200">
+                      {analytics.expiringDocs.sort((a, b) => a.daysLeft - b.daysLeft).map((doc, index) => (
+                        <div key={index} className="p-4 hover:bg-orange-50">
+                          <div className="flex items-center space-x-3 mb-3">
+                            <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
+                              <span className="text-orange-600 font-bold text-sm">{doc.name.charAt(0).toUpperCase()}</span>
+                            </div>
+                            <div className="flex-1">
+                              <div className="text-sm font-semibold text-gray-900">{doc.name}</div>
+                              <div className="text-xs text-orange-600 capitalize">{doc.document}</div>
+                            </div>
+                            <div className={`px-2 py-1 rounded text-xs font-bold ${
+                              doc.daysLeft <= 7 ? 'bg-red-600 text-white' : 
+                              doc.daysLeft <= 15 ? 'bg-orange-600 text-white' : 'bg-yellow-500 text-white'
+                            }`}>
+                              {doc.daysLeft} days left
+                            </div>
+                          </div>
+                          <div className="text-xs text-gray-600 mb-3">
+                            <span className="font-medium">Expires:</span> {formatDate(doc.expiryDate)}
+                          </div>
+                          <button
+                            onClick={() => {
+                              const employee = tempEmployees.find(u => u.name === doc.name);
+                              if (employee) {
+                                handleEditTempEmployee(employee);
+                              }
+                            }}
+                            className="w-full px-4 py-2 bg-orange-600 text-white text-sm font-medium rounded-lg hover:bg-orange-700"
+                          >
+                            Edit Employee
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  {/* Desktop Table View */}
+                  <div className="hidden lg:block overflow-x-auto">
                     <table className="min-w-full">
                       <thead className="bg-gradient-to-r from-gray-50 to-gray-100">
                         <tr>

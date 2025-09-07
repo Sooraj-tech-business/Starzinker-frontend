@@ -13,7 +13,7 @@ export default function Navbar({ onLogout }) {
   const isManager = currentUser?.role === 'manager' || currentUser?.role === 'Manager';
 
   return (
-    <nav className="bg-gradient-to-r from-gray-800 via-gray-700 to-gray-800 shadow-2xl border-b border-gray-600/30">
+    <nav className="bg-gradient-to-r from-indigo-600 via-purple-600 to-blue-600 shadow-2xl border-b border-indigo-500/30">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 sm:h-20">
           {/* Company Name with Logo */}
@@ -25,7 +25,7 @@ export default function Navbar({ onLogout }) {
             </div>
             <div>
               <h1 className="text-white font-bold text-lg sm:text-2xl tracking-tight drop-shadow-sm">STAR ZINKER</h1>
-              <p className="text-blue-200 text-xs sm:text-sm font-medium opacity-90">Qatar</p>
+              <p className="text-indigo-200 text-xs sm:text-sm font-medium opacity-90">Qatar</p>
             </div>
           </div>
           

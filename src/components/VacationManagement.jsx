@@ -12,6 +12,7 @@ export default function VacationManagement({ users }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [branchFilter, setBranchFilter] = useState('all');
+  const [timePeriodFilter, setTimePeriodFilter] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
   const [formData, setFormData] = useState({
@@ -19,7 +20,7 @@ export default function VacationManagement({ users }) {
     employeeName: '',
     qid: '',
     startDate: '',
-    endDate: '',
+    duration: '',
     reason: ''
   });
 
@@ -54,9 +55,34 @@ export default function VacationManagement({ users }) {
       });
     }
 
+    if (timePeriodFilter !== 'all') {
+      const now = new Date();
+      filtered = filtered.filter(vacation => {
+        const startDate = new Date(vacation.startDate);
+        const endDate = new Date(vacation.endDate);
+        
+        switch (timePeriodFilter) {
+          case '1month':
+            const oneMonthAgo = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
+            return startDate >= oneMonthAgo || endDate >= oneMonthAgo;
+          case '3months':
+            const threeMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 3, now.getDate());
+            return startDate >= threeMonthsAgo || endDate >= threeMonthsAgo;
+          case '6months':
+            const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 6, now.getDate());
+            return startDate >= sixMonthsAgo || endDate >= sixMonthsAgo;
+          case '1year':
+            const oneYearAgo = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
+            return startDate >= oneYearAgo || endDate >= oneYearAgo;
+          default:
+            return true;
+        }
+      });
+    }
+
     setFilteredVacations(filtered);
     setCurrentPage(1);
-  }, [vacations, searchTerm, statusFilter, branchFilter, users]);
+  }, [vacations, searchTerm, statusFilter, branchFilter, timePeriodFilter, users]);
 
   const fetchVacations = async () => {
     try {
@@ -110,16 +136,54 @@ export default function VacationManagement({ users }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (!formData.employeeId || !formData.startDate || !formData.endDate) {
+    if (!formData.employeeId || !formData.startDate || !formData.duration) {
       alert('Please fill in all required fields');
       return;
     }
 
+    // Calculate end date based on duration
+    const startDate = new Date(formData.startDate);
+    let endDate = new Date(startDate);
+    
+    switch (formData.duration) {
+      case '1week':
+        endDate.setDate(startDate.getDate() + 6);
+        break;
+      case '2weeks':
+        endDate.setDate(startDate.getDate() + 13);
+        break;
+      case '1month':
+        endDate.setMonth(startDate.getMonth() + 1);
+        endDate.setDate(startDate.getDate() - 1);
+        break;
+      case '2months':
+        endDate.setMonth(startDate.getMonth() + 2);
+        endDate.setDate(startDate.getDate() - 1);
+        break;
+      case '3months':
+        endDate.setMonth(startDate.getMonth() + 3);
+        endDate.setDate(startDate.getDate() - 1);
+        break;
+      case '6months':
+        endDate.setMonth(startDate.getMonth() + 6);
+        endDate.setDate(startDate.getDate() - 1);
+        break;
+      case '1year':
+        endDate.setFullYear(startDate.getFullYear() + 1);
+        endDate.setDate(startDate.getDate() - 1);
+        break;
+    }
+
+    const vacationData = {
+      ...formData,
+      endDate: endDate.toISOString().split('T')[0]
+    };
+
     try {
       if (editingVacation) {
-        await api.put(`/api/vacations/${editingVacation._id}`, formData);
+        await api.put(`/api/vacations/${editingVacation._id}`, vacationData);
       } else {
-        await api.post('/api/vacations', formData);
+        await api.post('/api/vacations', vacationData);
       }
       
       await fetchVacations();
@@ -131,7 +195,7 @@ export default function VacationManagement({ users }) {
         employeeName: '',
         qid: '',
         startDate: '',
-        endDate: '',
+        duration: '',
         reason: ''
       });
     } catch (error) {
@@ -142,12 +206,28 @@ export default function VacationManagement({ users }) {
 
   const handleEdit = (vacation) => {
     setEditingVacation(vacation);
+    
+    // Calculate duration from start and end dates
+    const startDate = new Date(vacation.startDate);
+    const endDate = new Date(vacation.endDate);
+    const diffTime = Math.abs(endDate - startDate);
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+    
+    let duration = '';
+    if (diffDays <= 7) duration = '1week';
+    else if (diffDays <= 14) duration = '2weeks';
+    else if (diffDays <= 31) duration = '1month';
+    else if (diffDays <= 62) duration = '2months';
+    else if (diffDays <= 93) duration = '3months';
+    else if (diffDays <= 186) duration = '6months';
+    else duration = '1year';
+    
     setFormData({
       employeeId: vacation.employeeId,
       employeeName: vacation.employeeName,
       qid: vacation.qid || '',
       startDate: vacation.startDate.split('T')[0],
-      endDate: vacation.endDate.split('T')[0],
+      duration: duration,
       reason: vacation.reason || ''
     });
     setShowEditForm(true);
@@ -250,6 +330,19 @@ export default function VacationManagement({ users }) {
             {[...new Set(users?.map(user => user.workLocation || user.branch).filter(Boolean))].map(branch => (
               <option key={branch} value={branch}>{branch}</option>
             ))}
+          </select>
+        </div>
+        <div>
+          <select
+            value={timePeriodFilter}
+            onChange={(e) => setTimePeriodFilter(e.target.value)}
+            className="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          >
+            <option value="all">All Time</option>
+            <option value="1month">Last 1 Month</option>
+            <option value="3months">Last 3 Months</option>
+            <option value="6months">Last 6 Months</option>
+            <option value="1year">Last 1 Year</option>
           </select>
         </div>
         <div className="text-sm text-gray-500 flex items-center">
@@ -587,16 +680,24 @@ export default function VacationManagement({ users }) {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                End Date*
+                Duration*
               </label>
-              <input
-                type="date"
-                name="endDate"
-                value={formData.endDate}
+              <select
+                name="duration"
+                value={formData.duration}
                 onChange={handleChange}
                 required
                 className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              />
+              >
+                <option value="">Select Duration</option>
+                <option value="1week">1 Week</option>
+                <option value="2weeks">2 Weeks</option>
+                <option value="1month">1 Month</option>
+                <option value="2months">2 Months</option>
+                <option value="3months">3 Months</option>
+                <option value="6months">6 Months</option>
+                <option value="1year">1 Year</option>
+              </select>
             </div>
 
             <div>

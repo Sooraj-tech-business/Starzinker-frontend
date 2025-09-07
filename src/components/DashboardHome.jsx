@@ -400,7 +400,7 @@ export default function DashboardHome({ users, branches, tempEmployees, expendit
         </div>
       </div>
       
-      <div className="mt-4 sm:mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="mt-4 sm:mt-6 grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-3">
         {/* Users Card with Growth Indicator */}
         <div onClick={() => navigate('/dashboard?tab=users')} className="bg-gradient-to-br from-blue-50 to-sky-100 overflow-hidden shadow-md rounded-lg border border-blue-200 cursor-pointer hover:shadow-lg transition-all duration-200">
           <div className="px-4 py-5 sm:p-6">
