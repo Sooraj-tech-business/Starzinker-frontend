@@ -22,6 +22,7 @@ import EditUser from './EditUser';
 import AddBranch from './AddBranch';
 import EditBranchComplete from './EditBranchComplete';
 import EditVehicle from './EditVehicle';
+import ShareholderManagement from './ShareholderManagement';
 import Modal from './Modal';
 import WideModal from './WideModal';
 
@@ -97,9 +98,11 @@ export default function Dashboard({ onLogout }) {
   const [showEditVehicle, setShowEditVehicle] = useState(false);
   const [showViewEmployee, setShowViewEmployee] = useState(false);
   const [showViewBranch, setShowViewBranch] = useState(false);
+  const [showShareholderManagement, setShowShareholderManagement] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
   const [selectedBranch, setSelectedBranch] = useState(null);
   const [selectedVehicle, setSelectedVehicle] = useState(null);
+  const [selectedBranchForShareholders, setSelectedBranchForShareholders] = useState(null);
   const [viewEmployee, setViewEmployee] = useState(null);
   const [viewBranch, setViewBranch] = useState(null);
   const [users, setUsers] = useState(mockEmployees);
@@ -613,6 +616,40 @@ export default function Dashboard({ onLogout }) {
     }
   };
 
+  // Handle updating shareholders
+  const handleUpdateShareholders = async (branchId, shareholders) => {
+    try {
+      console.log('Updating shareholders for branch:', branchId, shareholders);
+      
+      // Find the branch to update
+      const branch = branches.find(b => b._id === branchId);
+      if (!branch) {
+        throw new Error('Branch not found');
+      }
+      
+      // Update the branch with new shareholders
+      const updatedBranchData = {
+        ...branch,
+        shareholders: shareholders
+      };
+      
+      // Call API to update branch
+      const response = await api.put(`/api/branches/${branchId}`, updatedBranchData);
+      console.log('Shareholders update response:', response.data);
+      
+      // Update local state
+      setBranches(branches.map(b => 
+        b._id === branchId ? { ...b, shareholders: shareholders } : b
+      ));
+      
+      alert('Shareholders updated successfully!');
+    } catch (error) {
+      console.error('Error updating shareholders:', error);
+      alert(`Failed to update shareholders: ${error.message}. Please try again.`);
+      throw error;
+    }
+  };
+
   // Handle deleting a vehicle
   const handleDeleteVehicle = async (licenseNumber, branchId) => {
     if (window.confirm('Are you sure you want to delete this vehicle?')) {
@@ -729,6 +766,10 @@ export default function Dashboard({ onLogout }) {
                   onEditBranch={handleEditBranch}
                   onViewBranch={handleViewBranch}
                   onAddBranch={() => setShowAddBranch(true)}
+                  onManageShareholders={(branch) => {
+                    setSelectedBranchForShareholders(branch);
+                    setShowShareholderManagement(true);
+                  }}
                 />
               )}
 
@@ -835,6 +876,17 @@ export default function Dashboard({ onLogout }) {
           onClose={() => setShowViewBranch(false)}
         />
       </WideModal>
+
+      {showShareholderManagement && (
+        <ShareholderManagement 
+          branch={selectedBranchForShareholders}
+          onClose={() => {
+            setShowShareholderManagement(false);
+            setSelectedBranchForShareholders(null);
+          }}
+          onUpdateShareholders={handleUpdateShareholders}
+        />
+      )}
     </div>
   );
 }

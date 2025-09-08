@@ -13,7 +13,7 @@ export default function AddDailyExpenditure({ onClose, onAddExpenditure, onSaveD
       { platform: 'ATM', amount: '', description: '' }
     ],
     deliveryMoney: '',
-    expenses: [{ category: '', amount: '', description: '' }],
+    expenses: [{ category: '', amount: '', type: 'NORMAL EXPENSE', description: '' }],
     submittedBy: isManagerMode ? currentUser?.name || '' : '',
     notes: ''
   });
@@ -23,7 +23,7 @@ export default function AddDailyExpenditure({ onClose, onAddExpenditure, onSaveD
     if (existingDraft && isManagerMode) {
       setFormData({
         ...existingDraft,
-        expenses: existingDraft.expenses?.length > 0 ? existingDraft.expenses : [{ category: '', amount: '', description: '' }],
+        expenses: existingDraft.expenses?.length > 0 ? existingDraft.expenses : [{ category: '', amount: '', type: 'NORMAL EXPENSE', description: '' }],
         onlineDeliveries: existingDraft.onlineDeliveries?.length > 0 ? existingDraft.onlineDeliveries : [
           { platform: 'Talabat', amount: '', description: '' },
           { platform: 'Snoonu', amount: '', description: '' },
@@ -58,7 +58,7 @@ export default function AddDailyExpenditure({ onClose, onAddExpenditure, onSaveD
   const addExpenseItem = () => {
     setFormData({
       ...formData,
-      expenses: [...formData.expenses, { category: '', amount: '', description: '' }]
+      expenses: [...formData.expenses, { category: '', amount: '', type: 'NORMAL EXPENSE', description: '' }]
     });
   };
 
@@ -95,7 +95,8 @@ export default function AddDailyExpenditure({ onClose, onAddExpenditure, onSaveD
       income: parseFloat(formData.income) || 0,
       expenses: formData.expenses.map(exp => ({
         ...exp,
-        amount: parseFloat(exp.amount) || 0
+        amount: parseFloat(exp.amount) || 0,
+        type: exp.type || 'NORMAL EXPENSE'
       })),
       onlineDeliveries: formData.onlineDeliveries.map(del => ({
         ...del,
@@ -105,7 +106,8 @@ export default function AddDailyExpenditure({ onClose, onAddExpenditure, onSaveD
       deliveryMoney: parseFloat(formData.deliveryMoney) || 0
     };
     
-    console.log('Submitting expenditure data:', expenditureData);
+    console.log('Final expenditure data:', JSON.stringify(expenditureData, null, 2));
+    console.log('Expenses with types:', expenditureData.expenses);
     
     await onAddExpenditure(expenditureData);
     onClose();
@@ -275,7 +277,7 @@ export default function AddDailyExpenditure({ onClose, onAddExpenditure, onSaveD
           
           <div className="space-y-4">
             {formData.expenses.map((expense, index) => (
-              <div key={index} className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 border border-gray-200 rounded-lg">
+              <div key={index} className="grid grid-cols-1 md:grid-cols-5 gap-4 p-4 border border-gray-200 rounded-lg">
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Category*</label>
                   <input
@@ -298,6 +300,19 @@ export default function AddDailyExpenditure({ onClose, onAddExpenditure, onSaveD
                     className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-red-800 focus:border-red-800 sm:text-sm"
                     required
                   />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Type*</label>
+                  <select
+                    value={expense.type || 'NORMAL EXPENSE'}
+                    onChange={(e) => handleExpenseChange(index, 'type', e.target.value)}
+                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-red-800 focus:border-red-800 sm:text-sm"
+                    required
+                  >
+                    <option value="NORMAL EXPENSE">NORMAL EXPENSE</option>
+                    <option value="GENERAL EXPENSE">GENERAL EXPENSE</option>
+                  </select>
                 </div>
                 
                 <div>

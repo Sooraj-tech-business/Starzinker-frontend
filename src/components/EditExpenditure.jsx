@@ -9,7 +9,7 @@ export default function EditExpenditure({ expenditure, onClose, onUpdateExpendit
     onlineDeliveries: [{ platform: '', amount: '', description: '' }],
     atmIncome: '',
     deliveryMoney: '',
-    expenses: [{ category: '', amount: '', description: '' }],
+    expenses: [{ category: '', amount: '', type: 'NORMAL EXPENSE', description: '' }],
     submittedBy: '',
     notes: ''
   });
@@ -28,7 +28,8 @@ export default function EditExpenditure({ expenditure, onClose, onUpdateExpendit
         income: expenditure.income.toString(),
         expenses: expenditure.expenses.map(exp => ({
           ...exp,
-          amount: exp.amount.toString()
+          amount: exp.amount.toString(),
+          type: exp.type || 'NORMAL EXPENSE'
         })),
         onlineDeliveries: expenditure.onlineDeliveries?.length > 0 ? expenditure.onlineDeliveries.map(del => ({
           ...del,
@@ -63,7 +64,7 @@ export default function EditExpenditure({ expenditure, onClose, onUpdateExpendit
   const addExpenseItem = () => {
     setFormData({
       ...formData,
-      expenses: [...formData.expenses, { category: '', amount: '', description: '' }]
+      expenses: [...formData.expenses, { category: '', amount: '', type: 'NORMAL EXPENSE', description: '' }]
     });
   };
 
@@ -93,12 +94,16 @@ export default function EditExpenditure({ expenditure, onClose, onUpdateExpendit
   const handleSubmit = async (e) => {
     e.preventDefault();
     
+    console.log('Form expenses before mapping:', formData.expenses);
+    
     const expenditureData = {
       ...formData,
       income: parseFloat(formData.income) || 0,
       expenses: formData.expenses.map(exp => ({
-        ...exp,
-        amount: parseFloat(exp.amount) || 0
+        category: exp.category,
+        amount: parseFloat(exp.amount) || 0,
+        type: exp.type || 'NORMAL EXPENSE',
+        description: exp.description || ''
       })),
       onlineDeliveries: formData.onlineDeliveries.map(del => ({
         ...del,
@@ -291,7 +296,7 @@ export default function EditExpenditure({ expenditure, onClose, onUpdateExpendit
           
           <div className="space-y-4">
             {formData.expenses.map((expense, index) => (
-              <div key={index} className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 border border-gray-200 rounded-lg">
+              <div key={index} className="grid grid-cols-1 md:grid-cols-5 gap-4 p-4 border border-gray-200 rounded-lg">
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Category*</label>
                   <input
@@ -314,6 +319,19 @@ export default function EditExpenditure({ expenditure, onClose, onUpdateExpendit
                     className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-red-800 focus:border-red-800 sm:text-sm"
                     required
                   />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Type*</label>
+                  <select
+                    value={expense.type || 'NORMAL EXPENSE'}
+                    onChange={(e) => handleExpenseChange(index, 'type', e.target.value)}
+                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-red-800 focus:border-red-800 sm:text-sm"
+                    required
+                  >
+                    <option value="NORMAL EXPENSE">NORMAL EXPENSE</option>
+                    <option value="GENERAL EXPENSE">GENERAL EXPENSE</option>
+                  </select>
                 </div>
                 
                 <div>

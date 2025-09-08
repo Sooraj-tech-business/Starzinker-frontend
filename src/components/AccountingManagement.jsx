@@ -165,9 +165,9 @@ export default function AccountingManagement({ expenditures, onAddExpenditure, o
         .negative { color: #dc2626; }
         .section { margin-bottom: 25px; }
         .section h3 { color: #dc2626; border-bottom: 2px solid #dc2626; padding-bottom: 5px; }
-        .expense-list { background: #f8f9fa; padding: 15px; border-radius: 8px; }
-        .expense-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #ddd; }
-        .expense-item:last-child { border-bottom: none; }
+        table { border-collapse: collapse; border: 1px solid black; }
+        th, td { padding: 5px; border: 1px solid black; }
+        th { background: #f0f0f0; font-weight: bold; }
         .footer { text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd; color: #666; font-size: 12px; }
     </style>
 </head>
@@ -281,139 +281,106 @@ export default function AccountingManagement({ expenditures, onAddExpenditure, o
         </div>
     </div>
     
-    <div class="section">
-        <h3>Financial Performance Overview</h3>
-        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 25px; border-radius: 15px; color: white; margin-bottom: 20px; text-align: center;">
-            <div style="font-size: 32px; font-weight: bold; margin-bottom: 10px;">${(() => {
-              const totalIncome = branchData.totalIncome;
-              const totalOnlineDelivery = branchData.expenditures.reduce((sum, exp) => sum + (exp.totalOnlineDelivery || 0), 0);
-              const totalDeliveryMoney = branchData.expenditures.reduce((sum, exp) => sum + (exp.deliveryMoney || 0), 0);
-              const grandTotal = totalIncome + totalOnlineDelivery + totalDeliveryMoney;
-              return formatCurrency(grandTotal);
-            })()}</div>
-            <div style="font-size: 18px; opacity: 0.9;">Total Revenue (All Sources)</div>
-            <div style="font-size: 14px; opacity: 0.8; margin-top: 5px;">Regular + Online Delivery + Delivery Money</div>
-        </div>
-        
-        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-bottom: 20px;">
-            <div style="background: #f8fafc; padding: 20px; border-radius: 12px; border-left: 5px solid #10b981;">
-                <h4 style="color: #10b981; margin-bottom: 15px; font-size: 16px;">💰 Revenue Breakdown</h4>
-                <div style="space-y: 8px;">
-                    <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e2e8f0;">
-                        <span style="color: #64748b;">Regular Income:</span>
-                        <strong style="color: #1e293b;">${formatCurrency(branchData.totalIncome)}</strong>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e2e8f0;">
-                        <span style="color: #64748b;">Online Delivery:</span>
-                        <strong style="color: #2563eb;">${(() => {
-                          const totalOnlineDelivery = branchData.expenditures.reduce((sum, exp) => sum + (exp.totalOnlineDelivery || 0), 0);
-                          return formatCurrency(totalOnlineDelivery);
-                        })()}</strong>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; padding: 8px 0;">
-                        <span style="color: #64748b;">Delivery Money:</span>
-                        <strong style="color: #7c3aed;">${(() => {
-                          const totalDeliveryMoney = branchData.expenditures.reduce((sum, exp) => sum + (exp.deliveryMoney || 0), 0);
-                          return formatCurrency(totalDeliveryMoney);
-                        })()}</strong>
-                    </div>
-                </div>
-            </div>
-            
-            <div style="background: #fef2f2; padding: 20px; border-radius: 12px; border-left: 5px solid #ef4444;">
-                <h4 style="color: #ef4444; margin-bottom: 15px; font-size: 16px;">💸 Expense Summary</h4>
-                <div style="space-y: 8px;">
-                    <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #fecaca;">
-                        <span style="color: #991b1b;">Total Expenses:</span>
-                        <strong style="color: #dc2626;">${formatCurrency(branchData.totalExpenses)}</strong>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #fecaca;">
-                        <span style="color: #991b1b;">Expense Ratio:</span>
-                        <strong style="color: #dc2626;">${branchData.totalIncome > 0 ? ((branchData.totalExpenses / branchData.totalIncome) * 100).toFixed(1) : 0}%</strong>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; padding: 8px 0;">
-                        <span style="color: #991b1b;">Net Result:</span>
-                        <strong style="color: ${branchData.totalEarnings >= 0 ? '#059669' : '#dc2626'};">${formatCurrency(Math.abs(branchData.totalEarnings))} ${branchData.totalEarnings >= 0 ? 'Profit' : 'Loss'}</strong>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+
     
 
     
-    <div class="section">
-        <h3>💼 Expense Categories Analysis</h3>
-        <div class="expense-list">
-            ${(() => {
-              const generalCategories = ['RENT', 'ELECTRICITY', 'KAFEEL', 'SALARY', 'QIB COMMITION'];
-              const consolidatedExpenses = {};
-              Object.entries(branchData.expenseBreakdown).forEach(([category, amount]) => {
-                const normalizedCategory = category.trim().toLowerCase();
-                const existingKey = Object.keys(consolidatedExpenses).find(key => 
-                  key.toLowerCase() === normalizedCategory
-                );
-                if (existingKey) {
-                  consolidatedExpenses[existingKey] += amount;
-                } else {
-                  consolidatedExpenses[category] = amount;
-                }
-              });
-              
-              const generalExpenses = Object.entries(consolidatedExpenses)
-                .filter(([category]) => generalCategories.some(gen => category.toLowerCase().includes(gen.toLowerCase())))
-                .sort(([,a], [,b]) => b - a);
-              
-              const totalGeneral = generalExpenses.reduce((sum, [,amount]) => sum + amount, 0);
-              
-              return generalExpenses.map(([category, amount]) => {
-                const percentage = totalGeneral > 0 ? ((amount / totalGeneral) * 100).toFixed(1) : 0;
-                return `<div class="expense-item"><span><strong>${category}</strong></span><span>${formatCurrency(amount)} (${percentage}%)</span></div>`;
-              }).join('') + 
-              `<div class="expense-item" style="border-top: 2px solid #dc2626; font-weight: bold; background: #fef3f2;"><span>TOTAL GENERAL</span><span>${formatCurrency(totalGeneral)}</span></div>`;
-            })()}
+    <div style="display: flex; gap: 20px;">
+        <div style="flex: 1;">
+            <h3>Normal Expenses</h3>
+            <table style="width: 100%;">
+                <tr><th style="background: #f97316; color: white;">Category</th><th style="background: #f97316; color: white;">Amount</th></tr>
+                ${(() => {
+                  const normalExpenses = {};
+                  let normalTotal = 0;
+                  
+                  branchData.expenditures.forEach(exp => {
+                    exp.expenses.forEach(expense => {
+                      if ((expense.type || 'NORMAL EXPENSE') === 'NORMAL EXPENSE') {
+                        normalExpenses[expense.category] = (normalExpenses[expense.category] || 0) + expense.amount;
+                        normalTotal += expense.amount;
+                      }
+                    });
+                  });
+                  
+                  const sortedNormal = Object.entries(normalExpenses).sort(([,a], [,b]) => b - a);
+                  
+                  let content = '';
+                  if (sortedNormal.length === 0) {
+                    content = '<tr><td>No normal expenses</td><td>0 QR</td></tr>';
+                  } else {
+                    content = sortedNormal.map(([category, amount]) => 
+                      `<tr><td>${category}</td><td>${formatCurrency(amount)}</td></tr>`
+                    ).join('');
+                  }
+                  
+                  content += `<tr style="background: #fff7ed;"><td><strong>TOTAL</strong></td><td><strong>${formatCurrency(normalTotal)}</strong></td></tr>`;
+                  return content;
+                })()}
+            </table>
         </div>
-    </div>
-    
-    <div class="section">
-        <h3>Purchase Expenses</h3>
-        <div class="expense-list">
-            ${(() => {
-              const generalCategories = ['RENT', 'ELECTRICITY', 'KAFEEL', 'SALARY', 'QIB COMMITION'];
-              const consolidatedExpenses = {};
-              Object.entries(branchData.expenseBreakdown).forEach(([category, amount]) => {
-                const normalizedCategory = category.trim().toLowerCase();
-                const existingKey = Object.keys(consolidatedExpenses).find(key => 
-                  key.toLowerCase() === normalizedCategory
-                );
-                if (existingKey) {
-                  consolidatedExpenses[existingKey] += amount;
-                } else {
-                  consolidatedExpenses[category] = amount;
-                }
-              });
-              
-              const purchaseExpenses = Object.entries(consolidatedExpenses)
-                .filter(([category]) => !generalCategories.some(gen => category.toLowerCase().includes(gen.toLowerCase())))
-                .sort(([,a], [,b]) => b - a);
-              
-              const totalPurchase = purchaseExpenses.reduce((sum, [,amount]) => sum + amount, 0);
-              
-              return purchaseExpenses.map(([category, amount]) => {
-                const percentage = totalPurchase > 0 ? ((amount / totalPurchase) * 100).toFixed(1) : 0;
-                return `<div class="expense-item"><span><strong>${category}</strong></span><span>${formatCurrency(amount)} (${percentage}%)</span></div>`;
-              }).join('') + 
-              `<div class="expense-item" style="border-top: 2px solid #2563eb; font-weight: bold; background: #f0f9ff;"><span>TOTAL PURCHASE</span><span>${formatCurrency(totalPurchase)}</span></div>`;
-            })()}
+        
+        <div style="flex: 1;">
+            <h3>General Expenses</h3>
+            <table style="width: 100%;">
+                <tr><th style="background: #ec4899; color: white;">Category</th><th style="background: #ec4899; color: white;">Amount</th></tr>
+                ${(() => {
+                  const generalExpenses = {};
+                  let generalTotal = 0;
+                  
+                  branchData.expenditures.forEach(exp => {
+                    exp.expenses.forEach(expense => {
+                      if (expense.type === 'GENERAL EXPENSE') {
+                        generalExpenses[expense.category] = (generalExpenses[expense.category] || 0) + expense.amount;
+                        generalTotal += expense.amount;
+                      }
+                    });
+                  });
+                  
+                  const sortedGeneral = Object.entries(generalExpenses).sort(([,a], [,b]) => b - a);
+                  
+                  let content = '';
+                  if (sortedGeneral.length === 0) {
+                    content = '<tr><td>No general expenses</td><td>0 QR</td></tr>';
+                  } else {
+                    content = sortedGeneral.map(([category, amount]) => 
+                      `<tr><td>${category}</td><td>${formatCurrency(amount)}</td></tr>`
+                    ).join('');
+                  }
+                  
+                  content += `<tr style="background: #fdf2f8;"><td><strong>TOTAL</strong></td><td><strong>${formatCurrency(generalTotal)}</strong></td></tr>`;
+                  return content;
+                })()}
+            </table>
         </div>
     </div>
     
     <div style="background: #f8fafc; padding: 20px; border-radius: 12px; margin-top: 30px; border-top: 3px solid #3b82f6;">
         <h3 style="color: #1e40af; margin-bottom: 15px;">📈 Key Performance Indicators</h3>
-        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px;">
+        <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 15px;">
             <div style="text-align: center; padding: 15px; background: white; border-radius: 8px;">
-                <div style="font-size: 20px; font-weight: bold; color: #059669;">${branchData.totalIncome > 0 ? Math.abs((branchData.totalEarnings / branchData.totalIncome) * 100).toFixed(1) : 0}%</div>
-                <div style="color: #64748b; font-size: 12px;">Profit Margin</div>
+                <div style="font-size: 16px; font-weight: bold; color: #f97316;">${(() => {
+                  let normalExpensesTotal = 0;
+                  branchData.expenditures.forEach(exp => {
+                    exp.expenses.forEach(expense => {
+                      if ((expense.type || 'NORMAL EXPENSE') === 'NORMAL EXPENSE') {
+                        normalExpensesTotal += expense.amount;
+                      }
+                    });
+                  });
+                  const normalExpensePercentage = branchData.totalIncome > 0 ? ((normalExpensesTotal / branchData.totalIncome) * 100).toFixed(1) : 0;
+                  const normalProfitPercentage = branchData.totalIncome > 0 ? (100 - normalExpensePercentage).toFixed(1) : 0;
+                  return `${normalProfitPercentage}%<br/>${formatCurrency(normalExpensesTotal)}`;
+                })()}</div>
+                <div style="color: #64748b; font-size: 12px;">Profit Margin (Normal Exp)</div>
+            </div>
+            <div style="text-align: center; padding: 15px; background: white; border-radius: 8px;">
+                <div style="font-size: 16px; font-weight: bold; color: #059669;">${(() => {
+                  const allExpensePercentage = branchData.totalIncome > 0 ? ((branchData.totalExpenses / branchData.totalIncome) * 100).toFixed(1) : 0;
+                  const allProfitPercentage = branchData.totalIncome > 0 ? (100 - allExpensePercentage).toFixed(1) : 0;
+                  return `${allProfitPercentage}%<br/>${formatCurrency(branchData.totalExpenses)}`;
+                })()}</div>
+                <div style="color: #64748b; font-size: 12px;">Profit Margin (All Exp)</div>
             </div>
             <div style="text-align: center; padding: 15px; background: white; border-radius: 8px;">
                 <div style="font-size: 20px; font-weight: bold; color: #2563eb;">${formatCurrency(branchData.recordCount > 0 ? (branchData.totalIncome / branchData.recordCount) : 0)}</div>
@@ -423,8 +390,39 @@ export default function AccountingManagement({ expenditures, onAddExpenditure, o
                 <div style="font-size: 20px; font-weight: bold; color: #dc2626;">${formatCurrency(branchData.recordCount > 0 ? (branchData.totalExpenses / branchData.recordCount) : 0)}</div>
                 <div style="color: #64748b; font-size: 12px;">Avg Daily Expenses</div>
             </div>
+            <div style="text-align: center; padding: 15px; background: white; border-radius: 8px;">
+                <div style="font-size: 16px; font-weight: bold; color: #7c3aed;">${(() => {
+                  const netIncomePercentage = branchData.totalIncome > 0 ? ((Math.abs(branchData.totalEarnings) / branchData.totalIncome) * 100).toFixed(1) : 0;
+                  return `${netIncomePercentage}%<br/>${formatCurrency(Math.abs(branchData.totalEarnings))}`;
+                })()}</div>
+                <div style="color: #64748b; font-size: 12px;">Net Income Margin</div>
+            </div>
         </div>
     </div>
+    
+    ${(() => {
+      if (branchData.shareholders && branchData.shareholders.length > 0) {
+        const totalProfit = branchData.totalEarnings;
+        return `
+        <div style="background: #f8fafc; padding: 20px; border-radius: 12px; margin-top: 30px; border-top: 3px solid #7c3aed;">
+            <h3 style="color: #7c3aed; margin-bottom: 15px;">👥 Shareholder Profit Distribution</h3>
+            <table style="width: 100%;">
+                <tr><th style="background: #7c3aed; color: white;">Shareholder</th><th style="background: #7c3aed; color: white;">QUID</th><th style="background: #7c3aed; color: white;">Share %</th><th style="background: #7c3aed; color: white;">Profit Share</th></tr>
+                ${branchData.shareholders.map(shareholder => {
+                  const profitShare = (totalProfit * shareholder.sharePercentage) / 100;
+                  return `<tr>
+                    <td>${shareholder.name}</td>
+                    <td>${shareholder.quid}</td>
+                    <td>${shareholder.sharePercentage}%</td>
+                    <td>${formatCurrency(profitShare)}</td>
+                  </tr>`;
+                }).join('')}
+                <tr style="background: #faf5ff;"><td><strong>TOTAL</strong></td><td></td><td><strong>${branchData.shareholders.reduce((sum, s) => sum + s.sharePercentage, 0)}%</strong></td><td><strong>${formatCurrency(totalProfit)}</strong></td></tr>
+            </table>
+        </div>`;
+      }
+      return '';
+    })()}
     
     <div class="footer">
         <p><strong>Report Summary:</strong> ${branchData.recordCount} daily entries analyzed for ${monthName} ${year}</p>

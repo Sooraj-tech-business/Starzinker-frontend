@@ -164,18 +164,60 @@ export default function ViewExpenditure({ expenditure, onClose }) {
               </svg>
               Expense Breakdown
             </h3>
-            <div className="space-y-3">
-              {expenditure.expenses.map((expense, index) => (
-                <div key={index} className="flex justify-between items-center py-2 border-b border-gray-200">
-                  <div>
-                    <div className="font-medium text-gray-900">{expense.category}</div>
-                    {expense.description && (
-                      <div className="text-sm text-gray-500">{expense.description}</div>
-                    )}
+            <div className="space-y-4">
+              {/* Normal Expenses */}
+              {expenditure.expenses.filter(exp => (exp.type || 'NORMAL EXPENSE') === 'NORMAL EXPENSE').length > 0 && (
+                <>
+                  <h4 className="font-medium text-orange-600 text-sm mb-2">Normal Expenses</h4>
+                  {expenditure.expenses
+                    .filter(exp => (exp.type || 'NORMAL EXPENSE') === 'NORMAL EXPENSE')
+                    .map((expense, index) => (
+                      <div key={index} className="flex justify-between items-center py-2 border-b border-gray-200">
+                        <div>
+                          <div className="font-medium text-gray-900">{expense.category}</div>
+                          {expense.description && (
+                            <div className="text-sm text-gray-500">{expense.description}</div>
+                          )}
+                        </div>
+                        <span className="font-semibold text-orange-600">{formatCurrency(expense.amount)}</span>
+                      </div>
+                    ))
+                  }
+                  <div className="flex justify-between items-center py-3 mt-2 bg-orange-100 rounded-lg px-3">
+                    <span className="font-bold text-orange-800">Total Normal Expenses</span>
+                    <span className="text-xl font-bold text-orange-800">
+                      {formatCurrency(expenditure.expenses.filter(exp => (exp.type || 'NORMAL EXPENSE') === 'NORMAL EXPENSE').reduce((sum, exp) => sum + exp.amount, 0))}
+                    </span>
                   </div>
-                  <span className="font-semibold text-red-600">{formatCurrency(expense.amount)}</span>
-                </div>
-              ))}
+                </>
+              )}
+              
+              {/* General Expenses */}
+              {expenditure.expenses.filter(exp => exp.type === 'GENERAL EXPENSE').length > 0 && (
+                <>
+                  <h4 className="font-medium text-pink-600 text-sm mb-2 mt-4">General Expenses</h4>
+                  {expenditure.expenses
+                    .filter(exp => exp.type === 'GENERAL EXPENSE')
+                    .map((expense, index) => (
+                      <div key={index} className="flex justify-between items-center py-2 border-b border-gray-200">
+                        <div>
+                          <div className="font-medium text-gray-900">{expense.category}</div>
+                          {expense.description && (
+                            <div className="text-sm text-gray-500">{expense.description}</div>
+                          )}
+                        </div>
+                        <span className="font-semibold text-pink-600">{formatCurrency(expense.amount)}</span>
+                      </div>
+                    ))
+                  }
+                  <div className="flex justify-between items-center py-3 mt-2 bg-pink-100 rounded-lg px-3">
+                    <span className="font-bold text-pink-800">Total General Expenses</span>
+                    <span className="text-xl font-bold text-pink-800">
+                      {formatCurrency(expenditure.expenses.filter(exp => exp.type === 'GENERAL EXPENSE').reduce((sum, exp) => sum + exp.amount, 0))}
+                    </span>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </div>
