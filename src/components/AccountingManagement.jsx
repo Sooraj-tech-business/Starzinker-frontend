@@ -216,7 +216,7 @@ export default function AccountingManagement({ expenditures, onAddExpenditure, o
         <tr>
             <th style="background: #dbeafe; color: #1e40af; text-align: center; padding: 6px;">Online Delivery</th>
             <th style="background: #fed7aa; color: #ea580c; text-align: center; padding: 6px;">ATM Services</th>
-            <th style="background: #f3e8ff; color: #7c3aed; text-align: center; padding: 6px;">Delivery Commission</th>
+            <th style="background: #f3e8ff; color: #7c3aed; text-align: center; padding: 6px;">Own Delivery</th>
         </tr>
         <tr>
             <td style="text-align: center; padding: 8px;">
