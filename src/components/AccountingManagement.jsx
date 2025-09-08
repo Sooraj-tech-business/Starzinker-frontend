@@ -199,12 +199,14 @@ export default function AccountingManagement({ expenditures, onAddExpenditure, o
             <div style="background: #f0f9ff; padding: 15px; border-radius: 8px; border: 2px solid #2563eb;">
                 <h4 style="color: #1d4ed8; margin-bottom: 12px; font-size: 14px;">🚚 Online Delivery</h4>
                 ${(() => {
-                  const platforms = ['Talabat', 'Keeta', 'Snoonu', 'ATM'];
+                  const platforms = ['Talabat', 'Keeta', 'Snoonu'];
                   const deliveryData = {};
                   branchData.expenditures.forEach(exp => {
                     if (exp.onlineDeliveries) {
                       exp.onlineDeliveries.forEach(delivery => {
-                        deliveryData[delivery.platform] = (deliveryData[delivery.platform] || 0) + delivery.amount;
+                        if (platforms.includes(delivery.platform)) {
+                          deliveryData[delivery.platform] = (deliveryData[delivery.platform] || 0) + delivery.amount;
+                        }
                       });
                     }
                   });
@@ -229,6 +231,29 @@ export default function AccountingManagement({ expenditures, onAddExpenditure, o
                   </div>`;
                   
                   return content;
+                })()}
+            </div>
+            
+            <div style="background: #fff7ed; padding: 15px; border-radius: 8px; border: 2px solid #f97316;">
+                <h4 style="color: #ea580c; margin-bottom: 12px; font-size: 14px;">🏧 ATM Services</h4>
+                ${(() => {
+                  let atmTotal = 0;
+                  branchData.expenditures.forEach(exp => {
+                    if (exp.onlineDeliveries) {
+                      exp.onlineDeliveries.forEach(delivery => {
+                        if (delivery.platform === 'ATM') {
+                          atmTotal += delivery.amount;
+                        }
+                      });
+                    }
+                  });
+                  
+                  return `<div style="text-align: center; margin-bottom: 12px;">
+                    <div style="font-size: 24px; font-weight: bold; color: #ea580c;">
+                      ${formatCurrency(atmTotal)}
+                    </div>
+                    <div style="color: #c2410c; font-size: 12px;">Total ATM Revenue</div>
+                  </div>`;
                 })()}
             </div>
             
