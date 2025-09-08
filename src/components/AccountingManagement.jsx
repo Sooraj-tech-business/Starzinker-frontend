@@ -147,7 +147,7 @@ export default function AccountingManagement({ expenditures, onAddExpenditure, o
   const downloadBranchPDF = (branchData, month, year, returnContent = false) => {
     const monthName = months.find(m => m.value === parseInt(month))?.label;
     
-    // Create simplified PDF content
+    // Create A4 PDF content
     const pdfContent = `
 <!DOCTYPE html>
 <html>
@@ -155,141 +155,137 @@ export default function AccountingManagement({ expenditures, onAddExpenditure, o
     <meta charset="UTF-8">
     <title>${branchData.name} - Monthly Report</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 20px; color: #333; line-height: 1.6; }
-        .header { text-align: center; border-bottom: 3px solid #dc2626; padding-bottom: 20px; margin-bottom: 30px; }
-        .summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 30px; }
-        .card { background: #f8f9fa; padding: 20px; border-radius: 8px; text-align: center; border-left: 4px solid #dc2626; }
-        .amount { font-size: 28px; font-weight: bold; margin-bottom: 5px; }
-        .label { font-size: 14px; color: #666; }
+        @page { size: A4; margin: 15mm; }
+        .page-break { page-break-before: always; }
+        @media print { body { margin: 0; } }
+        body { font-family: Arial, sans-serif; margin: 0; padding: 10px; color: #333; line-height: 1.2; font-size: 11px; display: flex; flex-direction: column; align-items: center; }
+        .container { max-width: 600px; width: 100%; }
+        .header { text-align: center; border-bottom: 2px solid #dc2626; padding-bottom: 10px; margin-bottom: 15px; }
+        .header h1 { font-size: 18px; margin: 5px 0; }
+        .header h2 { font-size: 14px; margin: 3px 0; }
+        .summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 15px; }
+        .card { background: #f8f9fa; padding: 10px; border-radius: 4px; text-align: center; border-left: 3px solid #dc2626; }
+        .amount { font-size: 16px; font-weight: bold; margin-bottom: 3px; }
+        .label { font-size: 10px; color: #666; }
         .positive { color: #059669; }
         .negative { color: #dc2626; }
-        .section { margin-bottom: 25px; }
-        .section h3 { color: #dc2626; border-bottom: 2px solid #dc2626; padding-bottom: 5px; }
-        table { border-collapse: collapse; border: 1px solid black; }
-        th, td { padding: 5px; border: 1px solid black; }
+        .section { margin-bottom: 12px; }
+        .section h3 { color: #dc2626; border-bottom: 1px solid #dc2626; padding-bottom: 3px; font-size: 12px; margin: 8px 0; }
+        table { border-collapse: collapse; border: 1px solid black; width: 100%; font-size: 9px; }
+        th, td { padding: 3px; border: 1px solid black; }
         th { background: #f0f0f0; font-weight: bold; }
-        .footer { text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd; color: #666; font-size: 12px; }
+        .chart-container { margin: 15px 0; text-align: center; }
+        .chart { width: 100%; height: 200px; border: 1px solid #ddd; background: #f9f9f9; display: flex; align-items: center; justify-content: center; margin: 10px 0; }
+        .bar-chart { display: flex; align-items: end; height: 150px; gap: 5px; padding: 10px; }
+        .bar { background: linear-gradient(to top, #3b82f6, #60a5fa); border-radius: 2px 2px 0 0; color: white; font-size: 8px; display: flex; align-items: end; justify-content: center; padding: 2px; }
+        .pie-chart { width: 150px; height: 150px; border-radius: 50%; background: conic-gradient(#ef4444 0deg 120deg, #f97316 120deg 200deg, #eab308 200deg 280deg, #22c55e 280deg 360deg); margin: 0 auto; }
+        .kpi-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+        .kpi-item { text-align: center; padding: 8px; background: white; border-radius: 4px; border: 1px solid #ddd; }
+        .kpi-value { font-size: 10px; font-weight: bold; }
+        .kpi-label { font-size: 8px; color: #666; }
+        .two-col { display: flex; gap: 10px; }
+        .two-col > div { flex: 1; }
+        .footer { text-align: center; margin-top: 15px; padding-top: 10px; border-top: 1px solid #ddd; color: #666; font-size: 8px; }
     </style>
 </head>
 <body>
+    <div class="container">
     <div class="header">
         <h1>${branchData.name}</h1>
         <h2>Monthly Financial Report - ${monthName} ${year}</h2>
         <p>Generated on ${new Date().toLocaleDateString()}</p>
     </div>
     
-    <div class="summary">
-        <div class="card">
-            <div class="amount positive">${formatCurrency(branchData.totalIncome)}</div>
-            <div class="label">Total Income</div>
-        </div>
-        <div class="card">
-            <div class="amount negative">${formatCurrency(branchData.totalExpenses)}</div>
-            <div class="label">Total Expenses</div>
-        </div>
-        <div class="card">
-            <div class="amount ${branchData.totalEarnings >= 0 ? 'positive' : 'negative'}">${formatCurrency(Math.abs(branchData.totalEarnings))}</div>
-            <div class="label">Net ${branchData.totalEarnings >= 0 ? 'Profit' : 'Loss'}</div>
-        </div>
-    </div>
+    <table style="width: 100%; margin-bottom: 15px;">
+        <tr>
+            <th style="background: linear-gradient(135deg, #22c55e, #16a34a); color: white; text-align: center; padding: 8px;">Total Income</th>
+            <th style="background: linear-gradient(135deg, #ef4444, #dc2626); color: white; text-align: center; padding: 8px;">Total Expenses</th>
+            <th style="background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; text-align: center; padding: 8px;">Net ${branchData.totalEarnings >= 0 ? 'Profit' : 'Loss'}</th>
+        </tr>
+        <tr>
+            <td style="text-align: center; padding: 10px; font-size: 16px; font-weight: bold; color: #22c55e;">${formatCurrency(branchData.totalIncome)}</td>
+            <td style="text-align: center; padding: 10px; font-size: 16px; font-weight: bold; color: #ef4444;">${formatCurrency(branchData.totalExpenses)}</td>
+            <td style="text-align: center; padding: 10px; font-size: 16px; font-weight: bold; color: ${branchData.totalEarnings >= 0 ? '#3b82f6' : '#f97316'};">${formatCurrency(Math.abs(branchData.totalEarnings))}</td>
+        </tr>
+    </table>
     
-    <div class="section">
-        <h3>📊 Delivery Income & Commission</h3>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-            <div style="background: #f0f9ff; padding: 15px; border-radius: 8px; border: 2px solid #2563eb;">
-                <h4 style="color: #1d4ed8; margin-bottom: 12px; font-size: 14px;">🚚 Online Delivery</h4>
+    <table style="width: 100%; margin-bottom: 15px;">
+        <tr>
+            <th colspan="4" style="background: linear-gradient(135deg, #1e40af, #3b82f6); color: white; text-align: center; padding: 8px;">📊 Revenue Breakdown</th>
+        </tr>
+        <tr>
+            <th style="background: #dbeafe; color: #1e40af; text-align: center; padding: 6px;">Online Delivery</th>
+            <th style="background: #fed7aa; color: #ea580c; text-align: center; padding: 6px;">ATM Services</th>
+            <th style="background: #f3e8ff; color: #7c3aed; text-align: center; padding: 6px;">Delivery Commission</th>
+        </tr>
+        <tr>
+            <td style="text-align: center; padding: 8px;">
                 ${(() => {
                   const platforms = ['Talabat', 'Keeta', 'Snoonu'];
                   const deliveryData = {};
+                  let totalDelivery = 0;
                   branchData.expenditures.forEach(exp => {
                     if (exp.onlineDeliveries) {
                       exp.onlineDeliveries.forEach(delivery => {
                         if (platforms.includes(delivery.platform)) {
                           deliveryData[delivery.platform] = (deliveryData[delivery.platform] || 0) + delivery.amount;
+                          totalDelivery += delivery.amount;
                         }
                       });
                     }
                   });
                   
-                  let content = '';
-                  let totalDelivery = 0;
-                  
+                  let content = `<div style="font-weight: bold; color: #2563eb; margin-bottom: 4px;">${formatCurrency(totalDelivery)}</div>`;
                   platforms.forEach(platform => {
                     const amount = deliveryData[platform] || 0;
-                    totalDelivery += amount;
                     if (amount > 0) {
-                      content += `<div style="display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid #e5e7eb;">
-                        <span style="color: #374151; font-size: 13px;">${platform}</span>
-                        <span style="color: #2563eb; font-weight: bold; font-size: 13px;">${formatCurrency(amount)}</span>
-                      </div>`;
+                      content += `<div style="font-size: 8px; color: #64748b;">${platform}: ${formatCurrency(amount)}</div>`;
                     }
                   });
-                  
-                  content += `<div style="display: flex; justify-content: space-between; padding: 8px 0; border-top: 2px solid #2563eb; margin-top: 8px;">
-                    <span style="color: #1e40af; font-weight: bold; font-size: 14px;">TOTAL</span>
-                    <span style="color: #1e40af; font-weight: bold; font-size: 16px;">${formatCurrency(totalDelivery)}</span>
-                  </div>`;
-                  
                   return content;
                 })()}
-            </div>
-            
-            <div style="background: #fff7ed; padding: 15px; border-radius: 8px; border: 2px solid #f97316;">
-                <h4 style="color: #ea580c; margin-bottom: 12px; font-size: 14px;">🏧 ATM Services</h4>
-                ${(() => {
-                  let atmTotal = 0;
-                  branchData.expenditures.forEach(exp => {
-                    if (exp.onlineDeliveries) {
-                      exp.onlineDeliveries.forEach(delivery => {
-                        if (delivery.platform === 'ATM') {
-                          atmTotal += delivery.amount;
+            </td>
+            <td style="text-align: center; padding: 8px;">
+                <div style="font-weight: bold; color: #ea580c;">
+                    ${(() => {
+                      let atmTotal = 0;
+                      branchData.expenditures.forEach(exp => {
+                        if (exp.onlineDeliveries) {
+                          exp.onlineDeliveries.forEach(delivery => {
+                            if (delivery.platform === 'ATM') {
+                              atmTotal += delivery.amount;
+                            }
+                          });
                         }
                       });
-                    }
-                  });
-                  
-                  return `<div style="text-align: center; margin-bottom: 12px;">
-                    <div style="font-size: 24px; font-weight: bold; color: #ea580c;">
-                      ${formatCurrency(atmTotal)}
-                    </div>
-                    <div style="color: #c2410c; font-size: 12px;">Total ATM Revenue</div>
-                  </div>`;
-                })()}
-            </div>
-            
-            <div style="background: #faf5ff; padding: 15px; border-radius: 8px; border: 2px solid #7c3aed;">
-                <h4 style="color: #7c3aed; margin-bottom: 12px; font-size: 14px;">💎 Delivery Money</h4>
-                <div style="text-align: center; margin-bottom: 12px;">
-                    <div style="font-size: 24px; font-weight: bold; color: #7c3aed;">
-                        ${(() => {
-                          const totalDeliveryMoney = branchData.expenditures.reduce((sum, exp) => sum + (exp.deliveryMoney || 0), 0);
-                          return formatCurrency(totalDeliveryMoney);
-                        })()}
-                    </div>
-                    <div style="color: #6d28d9; font-size: 12px;">Total Commission</div>
+                      return formatCurrency(atmTotal);
+                    })()}
                 </div>
-                <div style="background: white; padding: 8px; border-radius: 6px; text-align: center;">
-                    <div style="color: #6b7280; font-size: 11px;">Daily Average</div>
-                    <div style="color: #7c3aed; font-weight: bold; font-size: 14px;">
-                        ${(() => {
-                          const totalDeliveryMoney = branchData.expenditures.reduce((sum, exp) => sum + (exp.deliveryMoney || 0), 0);
-                          return formatCurrency(branchData.recordCount > 0 ? (totalDeliveryMoney / branchData.recordCount) : 0);
-                        })()}
-                    </div>
+            </td>
+            <td style="text-align: center; padding: 8px;">
+                <div style="font-weight: bold; color: #7c3aed;">
+                    ${(() => {
+                      const totalDeliveryMoney = branchData.expenditures.reduce((sum, exp) => sum + (exp.deliveryMoney || 0), 0);
+                      return formatCurrency(totalDeliveryMoney);
+                    })()}
                 </div>
-            </div>
-        </div>
+            </td>
+        </tr>
+    </table>
+    
+
+    
+
+    
+    <div style="margin-top: 20px;">
+        <h2 style="text-align: center; color: #dc2626; margin-bottom: 20px;">Expense Breakdown</h2>
     </div>
     
-
-    
-
-    
-    <div style="display: flex; gap: 20px;">
+    <div class="two-col">
         <div style="flex: 1;">
             <h3>Normal Expenses</h3>
             <table style="width: 100%;">
-                <tr><th style="background: #f97316; color: white;">Category</th><th style="background: #f97316; color: white;">Amount</th></tr>
+                <tr><th style="background: linear-gradient(135deg, #f97316, #fb923c); color: white; text-shadow: 1px 1px 2px rgba(0,0,0,0.3);">Category</th><th style="background: linear-gradient(135deg, #f97316, #fb923c); color: white; text-shadow: 1px 1px 2px rgba(0,0,0,0.3);">Amount</th></tr>
                 ${(() => {
                   const normalExpenses = {};
                   let normalTotal = 0;
@@ -310,11 +306,11 @@ export default function AccountingManagement({ expenditures, onAddExpenditure, o
                     content = '<tr><td>No normal expenses</td><td>0 QR</td></tr>';
                   } else {
                     content = sortedNormal.map(([category, amount]) => 
-                      `<tr><td>${category}</td><td>${formatCurrency(amount)}</td></tr>`
+                      `<tr><td style="text-align: center;">${category}</td><td style="text-align: center;">${formatCurrency(amount)}</td></tr>`
                     ).join('');
                   }
                   
-                  content += `<tr style="background: #fff7ed;"><td><strong>TOTAL</strong></td><td><strong>${formatCurrency(normalTotal)}</strong></td></tr>`;
+                  content += `<tr style="background: #fff7ed;"><td style="text-align: center;"><strong>TOTAL</strong></td><td style="text-align: center;"><strong>${formatCurrency(normalTotal)}</strong></td></tr>`;
                   return content;
                 })()}
             </table>
@@ -323,7 +319,7 @@ export default function AccountingManagement({ expenditures, onAddExpenditure, o
         <div style="flex: 1;">
             <h3>General Expenses</h3>
             <table style="width: 100%;">
-                <tr><th style="background: #ec4899; color: white;">Category</th><th style="background: #ec4899; color: white;">Amount</th></tr>
+                <tr><th style="background: linear-gradient(135deg, #ec4899, #f472b6); color: white; text-shadow: 1px 1px 2px rgba(0,0,0,0.3);">Category</th><th style="background: linear-gradient(135deg, #ec4899, #f472b6); color: white; text-shadow: 1px 1px 2px rgba(0,0,0,0.3);">Amount</th></tr>
                 ${(() => {
                   const generalExpenses = {};
                   let generalTotal = 0;
@@ -344,22 +340,22 @@ export default function AccountingManagement({ expenditures, onAddExpenditure, o
                     content = '<tr><td>No general expenses</td><td>0 QR</td></tr>';
                   } else {
                     content = sortedGeneral.map(([category, amount]) => 
-                      `<tr><td>${category}</td><td>${formatCurrency(amount)}</td></tr>`
+                      `<tr><td style="text-align: center;">${category}</td><td style="text-align: center;">${formatCurrency(amount)}</td></tr>`
                     ).join('');
                   }
                   
-                  content += `<tr style="background: #fdf2f8;"><td><strong>TOTAL</strong></td><td><strong>${formatCurrency(generalTotal)}</strong></td></tr>`;
+                  content += `<tr style="background: #fdf2f8;"><td style="text-align: center;"><strong>TOTAL</strong></td><td style="text-align: center;"><strong>${formatCurrency(generalTotal)}</strong></td></tr>`;
                   return content;
                 })()}
             </table>
         </div>
     </div>
     
-    <div style="background: #f8fafc; padding: 20px; border-radius: 12px; margin-top: 30px; border-top: 3px solid #3b82f6;">
-        <h3 style="color: #1e40af; margin-bottom: 15px;">📈 Key Performance Indicators</h3>
-        <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 15px;">
-            <div style="text-align: center; padding: 15px; background: white; border-radius: 8px;">
-                <div style="font-size: 16px; font-weight: bold; color: #f97316;">${(() => {
+    <div style="background: #f8fafc; padding: 10px; border-radius: 6px; margin-top: 15px; border-top: 2px solid #3b82f6;">
+        <h3 style="color: #1e40af; margin-bottom: 8px; font-size: 12px;">📈 Key Performance Indicators</h3>
+        <div class="kpi-grid">
+            <div class="kpi-item">
+                <div class="kpi-value" style="color: #f97316;">${(() => {
                   let normalExpensesTotal = 0;
                   branchData.expenditures.forEach(exp => {
                     exp.expenses.forEach(expense => {
@@ -372,30 +368,30 @@ export default function AccountingManagement({ expenditures, onAddExpenditure, o
                   const normalProfitPercentage = branchData.totalIncome > 0 ? (100 - normalExpensePercentage).toFixed(1) : 0;
                   return `${normalProfitPercentage}%<br/>${formatCurrency(normalExpensesTotal)}`;
                 })()}</div>
-                <div style="color: #64748b; font-size: 12px;">Profit Margin (Normal Exp)</div>
+                <div class="kpi-label">Profit Margin (Normal Exp)</div>
             </div>
-            <div style="text-align: center; padding: 15px; background: white; border-radius: 8px;">
-                <div style="font-size: 16px; font-weight: bold; color: #059669;">${(() => {
+            <div class="kpi-item">
+                <div class="kpi-value" style="color: #059669;">${(() => {
                   const allExpensePercentage = branchData.totalIncome > 0 ? ((branchData.totalExpenses / branchData.totalIncome) * 100).toFixed(1) : 0;
                   const allProfitPercentage = branchData.totalIncome > 0 ? (100 - allExpensePercentage).toFixed(1) : 0;
                   return `${allProfitPercentage}%<br/>${formatCurrency(branchData.totalExpenses)}`;
                 })()}</div>
-                <div style="color: #64748b; font-size: 12px;">Profit Margin (All Exp)</div>
+                <div class="kpi-label">Profit Margin (All Exp)</div>
             </div>
-            <div style="text-align: center; padding: 15px; background: white; border-radius: 8px;">
-                <div style="font-size: 20px; font-weight: bold; color: #2563eb;">${formatCurrency(branchData.recordCount > 0 ? (branchData.totalIncome / branchData.recordCount) : 0)}</div>
-                <div style="color: #64748b; font-size: 12px;">Avg Daily Revenue</div>
+            <div class="kpi-item">
+                <div class="kpi-value" style="color: #2563eb;">${formatCurrency(branchData.recordCount > 0 ? (branchData.totalIncome / branchData.recordCount) : 0)}</div>
+                <div class="kpi-label">Avg Daily Revenue</div>
             </div>
-            <div style="text-align: center; padding: 15px; background: white; border-radius: 8px;">
-                <div style="font-size: 20px; font-weight: bold; color: #dc2626;">${formatCurrency(branchData.recordCount > 0 ? (branchData.totalExpenses / branchData.recordCount) : 0)}</div>
-                <div style="color: #64748b; font-size: 12px;">Avg Daily Expenses</div>
+            <div class="kpi-item">
+                <div class="kpi-value" style="color: #dc2626;">${formatCurrency(branchData.recordCount > 0 ? (branchData.totalExpenses / branchData.recordCount) : 0)}</div>
+                <div class="kpi-label">Avg Daily Expenses</div>
             </div>
-            <div style="text-align: center; padding: 15px; background: white; border-radius: 8px;">
-                <div style="font-size: 16px; font-weight: bold; color: #7c3aed;">${(() => {
+            <div class="kpi-item">
+                <div class="kpi-value" style="color: #7c3aed;">${(() => {
                   const netIncomePercentage = branchData.totalIncome > 0 ? ((Math.abs(branchData.totalEarnings) / branchData.totalIncome) * 100).toFixed(1) : 0;
                   return `${netIncomePercentage}%<br/>${formatCurrency(Math.abs(branchData.totalEarnings))}`;
                 })()}</div>
-                <div style="color: #64748b; font-size: 12px;">Net Income Margin</div>
+                <div class="kpi-label">Net Income Margin</div>
             </div>
         </div>
     </div>
@@ -404,30 +400,149 @@ export default function AccountingManagement({ expenditures, onAddExpenditure, o
       if (branchData.shareholders && branchData.shareholders.length > 0) {
         const totalProfit = branchData.totalEarnings;
         return `
-        <div style="background: #f8fafc; padding: 20px; border-radius: 12px; margin-top: 30px; border-top: 3px solid #7c3aed;">
+        <div style="margin-top: 20px;">
+            <h2 style="text-align: center; color: #7c3aed; margin-bottom: 20px;">Shareholder Details</h2>
+        </div>
+        <div style="background: #f8fafc; padding: 20px; border-radius: 12px; margin-top: 15px; border-top: 3px solid #7c3aed;">
             <h3 style="color: #7c3aed; margin-bottom: 15px;">👥 Shareholder Profit Distribution</h3>
             <table style="width: 100%;">
-                <tr><th style="background: #7c3aed; color: white;">Shareholder</th><th style="background: #7c3aed; color: white;">QUID</th><th style="background: #7c3aed; color: white;">Share %</th><th style="background: #7c3aed; color: white;">Profit Share</th></tr>
+                <tr><th style="background: linear-gradient(135deg, #7c3aed, #a855f7); color: white; text-shadow: 1px 1px 2px rgba(0,0,0,0.3);">Shareholder</th><th style="background: linear-gradient(135deg, #7c3aed, #a855f7); color: white; text-shadow: 1px 1px 2px rgba(0,0,0,0.3);">QID</th><th style="background: linear-gradient(135deg, #7c3aed, #a855f7); color: white; text-shadow: 1px 1px 2px rgba(0,0,0,0.3);">Share %</th><th style="background: linear-gradient(135deg, #7c3aed, #a855f7); color: white; text-shadow: 1px 1px 2px rgba(0,0,0,0.3);">Profit Share</th></tr>
                 ${branchData.shareholders.map(shareholder => {
                   const profitShare = (totalProfit * shareholder.sharePercentage) / 100;
                   return `<tr>
-                    <td>${shareholder.name}</td>
-                    <td>${shareholder.quid}</td>
-                    <td>${shareholder.sharePercentage}%</td>
-                    <td>${formatCurrency(profitShare)}</td>
+                    <td style="text-align: center;">${shareholder.name}</td>
+                    <td style="text-align: center;">${shareholder.quid}</td>
+                    <td style="text-align: center;">${shareholder.sharePercentage}%</td>
+                    <td style="text-align: center;">${formatCurrency(profitShare)}</td>
                   </tr>`;
                 }).join('')}
-                <tr style="background: #faf5ff;"><td><strong>TOTAL</strong></td><td></td><td><strong>${branchData.shareholders.reduce((sum, s) => sum + s.sharePercentage, 0)}%</strong></td><td><strong>${formatCurrency(totalProfit)}</strong></td></tr>
+                <tr style="background: #faf5ff;"><td style="text-align: center;"><strong>TOTAL</strong></td><td style="text-align: center;"></td><td style="text-align: center;"><strong>${branchData.shareholders.reduce((sum, s) => sum + s.sharePercentage, 0)}%</strong></td><td style="text-align: center;"><strong>${formatCurrency(totalProfit)}</strong></td></tr>
             </table>
         </div>`;
       }
       return '';
     })()}
     
+    </div>
+    
+    <div style="margin-top: 20px;">
+        <h2 style="text-align: center; color: #1e40af; margin-bottom: 20px;">Financial Analytics & Charts</h2>
+    </div>
+    
+    <div class="chart-container">
+        <h3 style="color: #1e40af; font-size: 12px; margin-bottom: 10px;">📊 Visual Data Analysis</h3>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+            <div>
+                <h4 style="font-size: 10px; margin: 5px 0;">Income vs Expenses</h4>
+                <div class="pie-chart" style="background: conic-gradient(#22c55e 0deg ${(branchData.totalIncome / (branchData.totalIncome + branchData.totalExpenses) * 360)}deg, #ef4444 ${(branchData.totalIncome / (branchData.totalIncome + branchData.totalExpenses) * 360)}deg 360deg);"></div>
+                <div style="font-size: 8px; margin-top: 5px;">
+                    <span style="color: #22c55e;">■</span> Income: ${formatCurrency(branchData.totalIncome)}<br>
+                    <span style="color: #ef4444;">■</span> Expenses: ${formatCurrency(branchData.totalExpenses)}
+                </div>
+            </div>
+            
+            <div>
+                <h4 style="font-size: 10px; margin: 5px 0;">Monthly Performance</h4>
+                <div class="bar-chart">
+                    <div class="bar" style="height: ${Math.min(100, (branchData.totalIncome / Math.max(branchData.totalIncome, branchData.totalExpenses)) * 100)}%; width: 30px; background: #22c55e;">Inc</div>
+                    <div class="bar" style="height: ${Math.min(100, (branchData.totalExpenses / Math.max(branchData.totalIncome, branchData.totalExpenses)) * 100)}%; width: 30px; background: #ef4444;">Exp</div>
+                    <div class="bar" style="height: ${Math.min(100, Math.abs(branchData.totalEarnings) / Math.max(branchData.totalIncome, branchData.totalExpenses) * 100)}%; width: 30px; background: ${branchData.totalEarnings >= 0 ? '#3b82f6' : '#f97316'};">Net</div>
+                </div>
+            </div>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+            <div>
+                <h4 style="font-size: 10px; margin: 5px 0;">Expense Breakdown</h4>
+                <div class="pie-chart" style="background: conic-gradient(
+                    ${(() => {
+                      const expenseCategories = {};
+                      branchData.expenditures.forEach(exp => {
+                        exp.expenses.forEach(expense => {
+                          expenseCategories[expense.category] = (expenseCategories[expense.category] || 0) + expense.amount;
+                        });
+                      });
+                      
+                      const sortedCategories = Object.entries(expenseCategories).sort(([,a], [,b]) => b - a).slice(0, 4);
+                      const total = Object.values(expenseCategories).reduce((sum, val) => sum + val, 0);
+                      
+                      if (sortedCategories.length === 0) return '#f3f4f6 0deg 360deg';
+                      
+                      let currentAngle = 0;
+                      const colors = ['#ef4444', '#f97316', '#eab308', '#22c55e'];
+                      let gradientStops = '';
+                      
+                      sortedCategories.forEach(([category, amount], index) => {
+                        const angle = (amount / total) * 360;
+                        gradientStops += `${colors[index]} ${currentAngle}deg ${currentAngle + angle}deg${index < sortedCategories.length - 1 ? ', ' : ''}`;
+                        currentAngle += angle;
+                      });
+                      
+                      return gradientStops;
+                    })()}
+                );"></div>
+                <div style="font-size: 7px; margin-top: 5px;">
+                    ${(() => {
+                      const expenseCategories = {};
+                      branchData.expenditures.forEach(exp => {
+                        exp.expenses.forEach(expense => {
+                          expenseCategories[expense.category] = (expenseCategories[expense.category] || 0) + expense.amount;
+                        });
+                      });
+                      
+                      const sortedCategories = Object.entries(expenseCategories).sort(([,a], [,b]) => b - a).slice(0, 4);
+                      const colors = ['#ef4444', '#f97316', '#eab308', '#22c55e'];
+                      
+                      return sortedCategories.map(([category, amount], index) => 
+                        `<span style="color: ${colors[index]};">■</span> ${category}: ${formatCurrency(amount)}<br>`
+                      ).join('');
+                    })()}
+                </div>
+            </div>
+            
+            <div>
+                <h4 style="font-size: 10px; margin: 5px 0;">Expense Categories (Bar Chart)</h4>
+                <div class="bar-chart" style="height: 120px; justify-content: center;">
+                    ${(() => {
+                      const expenseCategories = {};
+                      branchData.expenditures.forEach(exp => {
+                        exp.expenses.forEach(expense => {
+                          expenseCategories[expense.category] = (expenseCategories[expense.category] || 0) + expense.amount;
+                        });
+                      });
+                      
+                      const sortedCategories = Object.entries(expenseCategories).sort(([,a], [,b]) => b - a).slice(0, 5);
+                      const maxAmount = Math.max(...sortedCategories.map(([,amount]) => amount));
+                      const colors = ['#ef4444', '#f97316', '#eab308', '#22c55e', '#3b82f6'];
+                      
+                      if (sortedCategories.length === 0) {
+                        return '<div style="text-align: center; line-height: 100px; color: #666;">No expense data</div>';
+                      }
+                      
+                      return sortedCategories.map(([category, amount], index) => {
+                        const height = (amount / maxAmount) * 100;
+                        return `<div style="display: flex; flex-direction: column; align-items: center; margin: 0 8px;">
+                          <div class="bar" style="height: ${height}%; width: 25px; background: ${colors[index]}; margin-bottom: 5px;"></div>
+                          <div style="font-size: 6px; text-align: center; max-width: 30px; word-wrap: break-word;">${category.substring(0, 6)}</div>
+                          <div style="font-size: 5px; color: #666; text-align: center;">${formatCurrency(amount)}</div>
+                        </div>`;
+                      }).join('');
+                    })()}
+                </div>
+            </div>
+        </div>
+
+        </div>
+        
+    </div>
+    
     <div class="footer">
         <p><strong>Report Summary:</strong> ${branchData.recordCount} daily entries analyzed for ${monthName} ${year}</p>
         <p><strong>Generated:</strong> ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}</p>
         <p><strong>System:</strong> Qatar Branch Management System - Professional Financial Analytics</p>
+    </div>
+    
     </div>
 </body>
 </html>
@@ -438,15 +553,15 @@ export default function AccountingManagement({ expenditures, onAddExpenditure, o
     }
     
     // Create and download PDF
-    const blob = new Blob([pdfContent], { type: 'text/html' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `${branchData.name}_Financial_Report_${monthName}_${year}.html`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(pdfContent);
+    printWindow.document.close();
+    printWindow.focus();
+    
+    setTimeout(() => {
+      printWindow.print();
+      printWindow.close();
+    }, 250);
   };
 
   // Advanced Analytics for Main Dashboard
@@ -1236,9 +1351,169 @@ export default function AccountingManagement({ expenditures, onAddExpenditure, o
         {/* Analytics Modal */}
         <WideModal isOpen={showAnalyticsModal} onClose={() => setShowAnalyticsModal(false)}>
           <div className="max-h-[90vh] overflow-y-auto">
-            <div className="bg-indigo-600 px-6 py-4 rounded-t-lg">
-              <h2 className="text-2xl font-bold text-white">Detailed Analytics - {branchData.name}</h2>
-              <p className="text-indigo-100">{months.find(m => m.value === parseInt(selectedMonth))?.label} {selectedYear}</p>
+            <div className="bg-indigo-600 px-6 py-4 rounded-t-lg flex justify-between items-center">
+              <div>
+                <h2 className="text-2xl font-bold text-white">Detailed Analytics - {branchData.name}</h2>
+                <p className="text-indigo-100">{months.find(m => m.value === parseInt(selectedMonth))?.label} {selectedYear}</p>
+              </div>
+              <button
+                onClick={() => {
+                  const monthName = months.find(m => m.value === parseInt(selectedMonth))?.label;
+                  const pdfContent = `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>${branchData.name} - Analytics Report</title>
+    <style>
+        @page { size: A4; margin: 15mm; }
+        body { font-family: Arial, sans-serif; margin: 0; padding: 10px; color: #333; line-height: 1.2; font-size: 11px; }
+        .header { text-align: center; border-bottom: 2px solid #4f46e5; padding-bottom: 10px; margin-bottom: 15px; }
+        .section { margin-bottom: 20px; }
+        .section h3 { color: #4f46e5; border-bottom: 1px solid #4f46e5; padding-bottom: 5px; }
+        table { border-collapse: collapse; width: 100%; font-size: 10px; margin-bottom: 15px; }
+        th, td { padding: 8px; border: 1px solid #ddd; text-align: center; white-space: nowrap; }
+        th { background: linear-gradient(135deg, #4f46e5, #6366f1); color: white; font-weight: bold; }
+        .delivery-section { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+        .card { background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0; }
+        .amount { font-size: 18px; font-weight: bold; color: #4f46e5; }
+        .footer { text-align: center; margin-top: 20px; font-size: 8px; color: #666; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Detailed Analytics Report</h1>
+        <h2>${branchData.name}</h2>
+        <p>${monthName} ${selectedYear}</p>
+        <p>Generated on ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}</p>
+    </div>
+    
+    <div class="delivery-section">
+        <div class="card">
+            <h3>🚚 Online Delivery Breakdown</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Platform</th>
+                        <th>Amount</th>
+                        <th>Percentage</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${(() => {
+                      const platforms = ['Talabat', 'Keeta', 'Snoonu', 'ATM'];
+                      const deliveryData = {};
+                      let totalDelivery = 0;
+                      branchData.expenditures.forEach(exp => {
+                        if (exp.onlineDeliveries) {
+                          exp.onlineDeliveries.forEach(delivery => {
+                            deliveryData[delivery.platform] = (deliveryData[delivery.platform] || 0) + delivery.amount;
+                            totalDelivery += delivery.amount;
+                          });
+                        }
+                      });
+                      
+                      return platforms.map(platform => {
+                        const amount = deliveryData[platform] || 0;
+                        const percentage = totalDelivery > 0 ? ((amount / totalDelivery) * 100).toFixed(1) : 0;
+                        return `
+                            <tr>
+                                <td>${platform}</td>
+                                <td>${formatCurrency(amount)}</td>
+                                <td>${percentage}%</td>
+                            </tr>
+                        `;
+                      }).join('');
+                    })()}
+                    <tr style="background: #f3f4f6; font-weight: bold;">
+                        <td>TOTAL</td>
+                        <td>${formatCurrency(branchData.expenditures.reduce((sum, exp) => sum + (exp.totalOnlineDelivery || 0), 0))}</td>
+                        <td>100%</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="card">
+            <h3>💎 Delivery Money Analytics</h3>
+            <div style="text-align: center; padding: 20px;">
+                <div class="amount">${formatCurrency(branchData.expenditures.reduce((sum, exp) => sum + (exp.deliveryMoney || 0), 0))}</div>
+                <div style="color: #666; margin-top: 5px;">Total Commission Earned</div>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Metric</th>
+                        <th>Value</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Daily Average</td>
+                        <td>${formatCurrency(branchData.recordCount > 0 ? (branchData.expenditures.reduce((sum, exp) => sum + (exp.deliveryMoney || 0), 0) / branchData.recordCount) : 0)}</td>
+                    </tr>
+                    <tr>
+                        <td>Total Days</td>
+                        <td>${branchData.recordCount} days</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <div class="section">
+        <h3>📊 Financial Summary</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Category</th>
+                    <th>Amount</th>
+                    <th>Percentage of Income</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Total Income</td>
+                    <td style="color: #059669; font-weight: bold;">${formatCurrency(branchData.totalIncome)}</td>
+                    <td>100%</td>
+                </tr>
+                <tr>
+                    <td>Total Expenses</td>
+                    <td style="color: #dc2626; font-weight: bold;">${formatCurrency(branchData.totalExpenses)}</td>
+                    <td>${branchData.totalIncome > 0 ? ((branchData.totalExpenses / branchData.totalIncome) * 100).toFixed(1) : 0}%</td>
+                </tr>
+                <tr>
+                    <td>Net Earnings</td>
+                    <td style="color: ${branchData.totalEarnings >= 0 ? '#059669' : '#dc2626'}; font-weight: bold;">${formatCurrency(Math.abs(branchData.totalEarnings))}</td>
+                    <td>${branchData.totalIncome > 0 ? ((Math.abs(branchData.totalEarnings) / branchData.totalIncome) * 100).toFixed(1) : 0}%</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    
+    <div class="footer">
+        <p>Qatar Branch Management System - Detailed Analytics Export</p>
+    </div>
+</body>
+</html>`;
+                  
+                  const printWindow = window.open('', '_blank');
+                  printWindow.document.write(pdfContent);
+                  printWindow.document.close();
+                  printWindow.focus();
+                  
+                  setTimeout(() => {
+                    printWindow.print();
+                    printWindow.close();
+                  }, 250);
+                }}
+                className="px-4 py-2 bg-white text-indigo-600 rounded-lg hover:bg-indigo-50 font-medium flex items-center space-x-2 border border-indigo-200"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                <span>Export Analytics</span>
+              </button>
             </div>
             
             <div className="p-6">
@@ -1353,8 +1628,95 @@ export default function AccountingManagement({ expenditures, onAddExpenditure, o
 
         {/* Detailed Records */}
         <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-          <div className="px-6 py-4 bg-gray-50 border-b">
+          <div className="px-6 py-4 bg-gray-50 border-b flex justify-between items-center">
             <h3 className="text-lg font-semibold text-gray-800">{months.find(m => m.value === parseInt(selectedMonth))?.label} {selectedYear} Detailed Records</h3>
+            <button
+              onClick={() => {
+                const monthName = months.find(m => m.value === parseInt(selectedMonth))?.label;
+                const pdfContent = `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>${branchData.name} - Detailed Records</title>
+    <style>
+        @page { size: A4; margin: 15mm; }
+        body { font-family: Arial, sans-serif; margin: 0; padding: 10px; color: #333; line-height: 1.2; font-size: 11px; }
+        .header { text-align: center; border-bottom: 2px solid #dc2626; padding-bottom: 10px; margin-bottom: 15px; }
+        table { border-collapse: collapse; width: 100%; font-size: 9px; }
+        th, td { padding: 6px; border: 1px solid #ddd; text-align: center; white-space: nowrap; }
+        th { background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; font-weight: bold; }
+        .positive { color: #059669; font-weight: bold; }
+        .negative { color: #dc2626; font-weight: bold; }
+        .footer { text-align: center; margin-top: 15px; font-size: 8px; color: #666; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>${branchData.name} - Detailed Records</h1>
+        <p>${monthName} ${selectedYear} Financial Records</p>
+        <p>Generated on ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}</p>
+    </div>
+    
+    <table>
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Date</th>
+                <th>Income</th>
+                <th>Total Expenses</th>
+                <th>Net Earnings</th>
+                <th>Submitted By</th>
+                <th>Expense Count</th>
+            </tr>
+        </thead>
+        <tbody>
+            ${branchData.expenditures.map((exp, index) => `
+                <tr>
+                    <td>${index + 1}</td>
+                    <td>${new Date(exp.date).toLocaleDateString()}</td>
+                    <td class="positive">${formatCurrency(exp.income)}</td>
+                    <td class="negative">${formatCurrency(exp.totalExpenses)}</td>
+                    <td class="${exp.earnings >= 0 ? 'positive' : 'negative'}">${formatCurrency(exp.earnings)}</td>
+                    <td>${exp.submittedBy}</td>
+                    <td>${exp.expenses.length} items</td>
+                </tr>
+            `).join('')}
+        </tbody>
+        <tfoot>
+            <tr style="background: #f3f4f6; font-weight: bold;">
+                <td colspan="2">TOTALS</td>
+                <td class="positive">${formatCurrency(branchData.totalIncome)}</td>
+                <td class="negative">${formatCurrency(branchData.totalExpenses)}</td>
+                <td class="${branchData.totalEarnings >= 0 ? 'positive' : 'negative'}">${formatCurrency(branchData.totalEarnings)}</td>
+                <td colspan="2">${branchData.recordCount} Records</td>
+            </tr>
+        </tfoot>
+    </table>
+    
+    <div class="footer">
+        <p>Qatar Branch Management System - Financial Records Export</p>
+    </div>
+</body>
+</html>`;
+                
+                const printWindow = window.open('', '_blank');
+                printWindow.document.write(pdfContent);
+                printWindow.document.close();
+                printWindow.focus();
+                
+                setTimeout(() => {
+                  printWindow.print();
+                  printWindow.close();
+                }, 250);
+              }}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium flex items-center space-x-2"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              <span>Export Records</span>
+            </button>
           </div>
           
           {branchData.expenditures.length > 0 ? (

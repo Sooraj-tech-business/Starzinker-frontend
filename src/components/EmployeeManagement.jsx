@@ -777,6 +777,84 @@ export default function EmployeeManagement({ users, onEditUser, onDeleteUser, on
                         <option value="visa">Visa</option>
                         <option value="medicalCard">Medical Card</option>
                       </select>
+                      <button
+                        onClick={() => {
+                          const filtered = analytics.expiredDocs.filter(doc => {
+                            const matchesSearch = doc.name.toLowerCase().includes(expiredSearch.toLowerCase());
+                            const matchesFilter = expiredFilter === 'all' || doc.document === expiredFilter;
+                            return matchesSearch && matchesFilter;
+                          });
+                          
+                          const pdfContent = `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Expired Documents Report</title>
+    <style>
+        @page { size: A4; margin: 15mm; }
+        body { font-family: Arial, sans-serif; margin: 0; padding: 10px; color: #333; line-height: 1.2; font-size: 11px; }
+        .header { text-align: center; border-bottom: 2px solid #dc2626; padding-bottom: 10px; margin-bottom: 15px; }
+        table { border-collapse: collapse; width: 100%; font-size: 10px; }
+        th, td { padding: 8px; border: 1px solid #ddd; text-align: center; white-space: nowrap; }
+        th { background: linear-gradient(135deg, #dc2626, #ef4444); color: white; font-weight: bold; }
+        .expired { background: #fef2f2; }
+        .overdue { color: #dc2626; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Expired Documents Report</h1>
+        <p>Generated on ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}</p>
+        <p>Total Expired Documents: ${filtered.length}</p>
+    </div>
+    
+    <table>
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Employee Name</th>
+                <th>Document Type</th>
+                <th>Expiry Date</th>
+                <th>Days Overdue</th>
+            </tr>
+        </thead>
+        <tbody>
+            ${filtered.sort((a, b) => b.daysOverdue - a.daysOverdue).map((doc, index) => `
+                <tr class="expired">
+                    <td>${index + 1}</td>
+                    <td>${doc.name}</td>
+                    <td style="text-transform: capitalize;">${doc.document === 'medicalCard' ? 'Medical Card' : doc.document}</td>
+                    <td>${formatDate(doc.expiryDate)}</td>
+                    <td class="overdue">${doc.daysOverdue} days</td>
+                </tr>
+            `).join('')}
+        </tbody>
+    </table>
+    
+    <div style="margin-top: 20px; text-align: center; font-size: 8px; color: #666;">
+        <p>Qatar Branch Management System - Employee Document Management</p>
+    </div>
+</body>
+</html>`;
+                          
+                          const printWindow = window.open('', '_blank');
+                          printWindow.document.write(pdfContent);
+                          printWindow.document.close();
+                          printWindow.focus();
+                          
+                          setTimeout(() => {
+                            printWindow.print();
+                            printWindow.close();
+                          }, 250);
+                        }}
+                        className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 font-medium flex items-center space-x-2"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        <span>Download PDF</span>
+                      </button>
                     </div>
                   </div>
                   
