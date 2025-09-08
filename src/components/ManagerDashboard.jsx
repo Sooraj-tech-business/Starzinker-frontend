@@ -2,6 +2,14 @@ import { useState, useEffect } from 'react';
 import WideModal from './WideModal';
 import AddDailyExpenditure from './AddDailyExpenditure';
 
+// Utility function to get business date with 6-hour grace period
+const getBusinessDate = () => {
+  const now = new Date();
+  // Subtract 6 hours to get the effective business time
+  const businessTime = new Date(now.getTime() - (6 * 60 * 60 * 1000));
+  return businessTime.toISOString().split('T')[0];
+};
+
 export default function ManagerDashboard({ expenditures, onAddExpenditure, branches, currentUser }) {
   const [showAddExpenditure, setShowAddExpenditure] = useState(false);
   const [showViewExpenditure, setShowViewExpenditure] = useState(false);
@@ -13,7 +21,7 @@ export default function ManagerDashboard({ expenditures, onAddExpenditure, branc
 
   // Check if manager has already submitted today
   useEffect(() => {
-    const today = new Date().toISOString().split('T')[0];
+    const today = getBusinessDate();
     
     if (userBranch && expenditures && currentUser) {
       const todayEntry = expenditures.find(exp => {
@@ -34,7 +42,7 @@ export default function ManagerDashboard({ expenditures, onAddExpenditure, branc
   }, [expenditures, userBranch, currentUser]);
 
   const handleSaveDraft = (expenditureData) => {
-    const today = new Date().toISOString().split('T')[0];
+    const today = getBusinessDate();
     const draftKey = `draft_${userBranch._id}_${currentUser.name}_${today}`;
     
     const draftData = {
@@ -53,7 +61,7 @@ export default function ManagerDashboard({ expenditures, onAddExpenditure, branc
   };
 
   const handleSubmitExpenditure = async (expenditureData) => {
-    const today = new Date().toISOString().split('T')[0];
+    const today = getBusinessDate();
     
     // Confirmation dialog
     const confirmed = window.confirm(
@@ -86,7 +94,7 @@ export default function ManagerDashboard({ expenditures, onAddExpenditure, branc
           <div className="bg-gradient-to-r from-red-800 to-red-900 px-6 py-4 text-center">
             <h2 className="text-xl font-bold text-white">Daily Expenditure</h2>
             <p className="text-red-100 text-sm">{userBranch?.name}</p>
-            <p className="text-red-100 text-xs">{new Date().toLocaleDateString()}</p>
+            <p className="text-red-100 text-xs">{new Date(getBusinessDate()).toLocaleDateString('en-GB')}</p>
           </div>
           
           <div className="p-6">
@@ -102,16 +110,16 @@ export default function ManagerDashboard({ expenditures, onAddExpenditure, branc
                 <div className="bg-gray-50 rounded-lg p-4 mb-4">
                   <div className="grid grid-cols-3 gap-2 text-center">
                     <div>
-                      <div className="text-lg font-bold text-green-600">{todaySubmission.income} AED</div>
+                      <div className="text-lg font-bold text-green-600">{todaySubmission.income} QR</div>
                       <div className="text-xs text-gray-600">Income</div>
                     </div>
                     <div>
-                      <div className="text-lg font-bold text-red-600">{todaySubmission.totalExpenses} AED</div>
+                      <div className="text-lg font-bold text-red-600">{todaySubmission.totalExpenses} QR</div>
                       <div className="text-xs text-gray-600">Expenses</div>
                     </div>
                     <div>
                       <div className={`text-lg font-bold ${todaySubmission.earnings >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                        {todaySubmission.earnings} AED
+                        {todaySubmission.earnings} QR
                       </div>
                       <div className="text-xs text-gray-600">Earnings</div>
                     </div>
@@ -182,16 +190,16 @@ export default function ManagerDashboard({ expenditures, onAddExpenditure, branc
             <div className="space-y-4">
               <div className="grid grid-cols-3 gap-4 p-4 bg-gray-50 rounded">
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-green-600">{todaySubmission.income} AED</div>
+                  <div className="text-2xl font-bold text-green-600">{todaySubmission.income} QR</div>
                   <div className="text-sm text-gray-600">Income</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-red-600">{todaySubmission.totalExpenses} AED</div>
+                  <div className="text-2xl font-bold text-red-600">{todaySubmission.totalExpenses} QR</div>
                   <div className="text-sm text-gray-600">Total Expenses</div>
                 </div>
                 <div className="text-center">
                   <div className={`text-2xl font-bold ${todaySubmission.earnings >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                    {todaySubmission.earnings} AED
+                    {todaySubmission.earnings} QR
                   </div>
                   <div className="text-sm text-gray-600">Earnings</div>
                 </div>
@@ -202,7 +210,7 @@ export default function ManagerDashboard({ expenditures, onAddExpenditure, branc
                   {todaySubmission.expenses?.map((exp, index) => (
                     <div key={index} className="flex justify-between p-2 bg-gray-50 rounded">
                       <span>{exp.category}</span>
-                      <span className="font-semibold">{exp.amount} AED</span>
+                      <span className="font-semibold">{exp.amount} QR</span>
                     </div>
                   ))}
                 </div>

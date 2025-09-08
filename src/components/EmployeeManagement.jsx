@@ -1116,6 +1116,89 @@ export default function EmployeeManagement({ users, onEditUser, onDeleteUser, on
                         <option value="visa">Visa</option>
                         <option value="medicalCard">Medical Card</option>
                       </select>
+                      <button
+                        onClick={() => {
+                          const filtered = analytics.expiringDocs.filter(doc => {
+                            const matchesSearch = doc.name.toLowerCase().includes(expiringSearch.toLowerCase());
+                            const matchesFilter = expiringFilter === 'all' || doc.document === expiringFilter;
+                            return matchesSearch && matchesFilter;
+                          });
+                          
+                          const pdfContent = `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Expiring Documents Report</title>
+    <style>
+        @page { size: A4; margin: 15mm; }
+        body { font-family: Arial, sans-serif; margin: 0; padding: 10px; color: #333; line-height: 1.2; font-size: 11px; }
+        .header { text-align: center; border-bottom: 2px solid #f97316; padding-bottom: 10px; margin-bottom: 15px; }
+        table { border-collapse: collapse; width: 100%; font-size: 10px; }
+        th, td { padding: 8px; border: 1px solid #ddd; text-align: center; white-space: nowrap; }
+        th { background: linear-gradient(135deg, #f97316, #fb923c); color: white; font-weight: bold; }
+        .expiring { background: #fff7ed; }
+        .urgent { color: #dc2626; font-weight: bold; }
+        .warning { color: #f97316; font-weight: bold; }
+        .normal { color: #eab308; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Documents Expiring Soon Report</h1>
+        <p>Generated on ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}</p>
+        <p>Total Expiring Documents: ${filtered.length}</p>
+    </div>
+    
+    <table>
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Employee Name</th>
+                <th>Document Type</th>
+                <th>Expiry Date</th>
+                <th>Days Left</th>
+                <th>Priority</th>
+            </tr>
+        </thead>
+        <tbody>
+            ${filtered.sort((a, b) => a.daysLeft - b.daysLeft).map((doc, index) => `
+                <tr class="expiring">
+                    <td>${index + 1}</td>
+                    <td>${doc.name}</td>
+                    <td style="text-transform: capitalize;">${doc.document === 'medicalCard' ? 'Medical Card' : doc.document}</td>
+                    <td>${formatDate(doc.expiryDate)}</td>
+                    <td class="${doc.daysLeft <= 7 ? 'urgent' : doc.daysLeft <= 15 ? 'warning' : 'normal'}">${doc.daysLeft} days</td>
+                    <td class="${doc.daysLeft <= 7 ? 'urgent' : doc.daysLeft <= 15 ? 'warning' : 'normal'}">${doc.daysLeft <= 7 ? 'URGENT' : doc.daysLeft <= 15 ? 'HIGH' : 'MEDIUM'}</td>
+                </tr>
+            `).join('')}
+        </tbody>
+    </table>
+    
+    <div style="margin-top: 20px; text-align: center; font-size: 8px; color: #666;">
+        <p>Qatar Branch Management System - Employee Document Management</p>
+        <p>Priority: URGENT (≤7 days) | HIGH (8-15 days) | MEDIUM (16-30 days)</p>
+    </div>
+</body>
+</html>`;
+                          
+                          const printWindow = window.open('', '_blank');
+                          printWindow.document.write(pdfContent);
+                          printWindow.document.close();
+                          printWindow.focus();
+                          
+                          setTimeout(() => {
+                            printWindow.print();
+                            printWindow.close();
+                          }, 250);
+                        }}
+                        className="px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 font-medium flex items-center space-x-2"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        <span>Download PDF</span>
+                      </button>
                     </div>
                   </div>
                   

@@ -1,10 +1,18 @@
 import { useState ,useEffect} from 'react';
 
+// Utility function to get business date with 6-hour grace period
+const getBusinessDate = () => {
+  const now = new Date();
+  // Subtract 6 hours to get the effective business time
+  const businessTime = new Date(now.getTime() - (6 * 60 * 60 * 1000));
+  return businessTime.toISOString().split('T')[0];
+};
+
 export default function AddDailyExpenditure({ onClose, onAddExpenditure, onSaveDraft, branches, currentUser, isManagerMode, existingDraft }) {
   const [formData, setFormData] = useState({
     branchId: isManagerMode ? branches[0]?._id || '' : '',
     branchName: isManagerMode ? branches[0]?.name || '' : '',
-    date: new Date().toISOString().split('T')[0],
+    date: getBusinessDate(),
     income: '',
     onlineDeliveries: [
       { platform: 'Talabat', amount: '', description: '' },
@@ -232,7 +240,7 @@ export default function AddDailyExpenditure({ onClose, onAddExpenditure, onSaveD
                     placeholder="Enter amount if applicable"
                   />
                 </div>
-                
+{/*                 
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Description</label>
                   <input
@@ -242,7 +250,7 @@ export default function AddDailyExpenditure({ onClose, onAddExpenditure, onSaveD
                     placeholder="e.g., Daily delivery earnings"
                     className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                   />
-                </div>
+                </div> */}
                 
 
               </div>

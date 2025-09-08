@@ -532,7 +532,7 @@ export default function VehiclesManagement({ branches, onEditVehicle, onAddVehic
         <>
           {/* Expired Documents Table */}
           <div className="bg-white shadow-xl rounded-xl border border-gray-100 overflow-hidden mb-6">
-            <div className="bg-gradient-to-r from-red-500 to-red-600 px-6 py-5">
+            <div className="bg-gradient-to-r from-red-500 to-red-600 px-6 py-5 flex justify-between items-center">
               <h3 className="text-xl font-bold text-white flex items-center">
                 <div className="bg-white bg-opacity-20 rounded-full p-2 mr-3">
                   <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -544,6 +544,108 @@ export default function VehiclesManagement({ branches, onEditVehicle, onAddVehic
                   <div className="text-red-100 text-sm font-normal">Urgent Action Required • {analytics.expired} documents</div>
                 </div>
               </h3>
+              <button
+                onClick={() => {
+                  const today = new Date();
+                  const expiredDocs = [];
+                  
+                  filteredVehicles.forEach(vehicle => {
+                    const docs = [
+                      { type: 'Istimara', expiry: vehicle.licenseExpiry },
+                      { type: 'Insurance', expiry: vehicle.insuranceExpiry }
+                    ];
+                    
+                    docs.forEach(doc => {
+                      if (doc.expiry) {
+                        const expiryDate = new Date(doc.expiry);
+                        const daysLeft = Math.ceil((expiryDate - today) / (1000 * 60 * 60 * 24));
+                        
+                        if (daysLeft < 0) {
+                          expiredDocs.push({
+                            vehicle,
+                            documentType: doc.type,
+                            expiryDate: doc.expiry,
+                            daysLeft
+                          });
+                        }
+                      }
+                    });
+                  });
+                  
+                  const pdfContent = `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Expired Vehicle Documents Report</title>
+    <style>
+        @page { size: A4; margin: 15mm; }
+        body { font-family: Arial, sans-serif; margin: 0; padding: 10px; color: #333; line-height: 1.2; font-size: 11px; }
+        .header { text-align: center; border-bottom: 2px solid #dc2626; padding-bottom: 10px; margin-bottom: 15px; }
+        table { border-collapse: collapse; width: 100%; font-size: 10px; }
+        th, td { padding: 8px; border: 1px solid #ddd; text-align: center; white-space: nowrap; }
+        th { background: linear-gradient(135deg, #dc2626, #ef4444); color: white; font-weight: bold; }
+        .expired { background: #fef2f2; }
+        .overdue { color: #dc2626; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Expired Vehicle Documents Report</h1>
+        <p>Generated on ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}</p>
+        <p>Total Expired Documents: ${expiredDocs.length}</p>
+    </div>
+    
+    <table>
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Vehicle Type</th>
+                <th>License Number</th>
+                <th>Branch</th>
+                <th>Document Type</th>
+                <th>Expiry Date</th>
+                <th>Days Overdue</th>
+            </tr>
+        </thead>
+        <tbody>
+            ${expiredDocs.sort((a, b) => Math.abs(b.daysLeft) - Math.abs(a.daysLeft)).map((doc, index) => `
+                <tr class="expired">
+                    <td>${index + 1}</td>
+                    <td>${doc.vehicle.type || 'N/A'}</td>
+                    <td>${doc.vehicle.licenseNumber}</td>
+                    <td>${doc.vehicle.branchName}</td>
+                    <td>${doc.documentType}</td>
+                    <td>${new Date(doc.expiryDate).toLocaleDateString()}</td>
+                    <td class="overdue">${Math.abs(doc.daysLeft)} days</td>
+                </tr>
+            `).join('')}
+        </tbody>
+    </table>
+    
+    <div style="margin-top: 20px; text-align: center; font-size: 8px; color: #666;">
+        <p>Qatar Branch Management System - Vehicle Document Management</p>
+    </div>
+</body>
+</html>`;
+                  
+                  const printWindow = window.open('', '_blank');
+                  printWindow.document.write(pdfContent);
+                  printWindow.document.close();
+                  printWindow.focus();
+                  
+                  setTimeout(() => {
+                    printWindow.print();
+                    printWindow.close();
+                  }, 250);
+                }}
+                className="px-4 py-2 bg-white text-red-600 rounded-lg hover:bg-red-50 font-medium flex items-center space-x-2 border border-red-200"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                <span>Download PDF</span>
+              </button>
             </div>
 
             {/* Mobile Card View */}
@@ -777,7 +879,7 @@ export default function VehiclesManagement({ branches, onEditVehicle, onAddVehic
 
           {/* Expiring Soon Documents Table */}
           <div className="bg-white shadow-xl rounded-xl border border-gray-100 overflow-hidden">
-            <div className="bg-gradient-to-r from-orange-500 to-amber-500 px-6 py-5">
+            <div className="bg-gradient-to-r from-orange-500 to-amber-500 px-6 py-5 flex justify-between items-center">
               <h3 className="text-xl font-bold text-white flex items-center">
                 <div className="bg-white bg-opacity-20 rounded-full p-2 mr-3">
                   <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -789,6 +891,112 @@ export default function VehiclesManagement({ branches, onEditVehicle, onAddVehic
                   <div className="text-orange-100 text-sm font-normal">Renewal Required • {analytics.expiringSoon} documents</div>
                 </div>
               </h3>
+              <button
+                onClick={() => {
+                  const today = new Date();
+                  const expiringSoonDocs = [];
+                  
+                  filteredVehicles.forEach(vehicle => {
+                    const docs = [
+                      { type: 'Istimara', expiry: vehicle.licenseExpiry },
+                      { type: 'Insurance', expiry: vehicle.insuranceExpiry }
+                    ];
+                    
+                    docs.forEach(doc => {
+                      if (doc.expiry) {
+                        const expiryDate = new Date(doc.expiry);
+                        const daysLeft = Math.ceil((expiryDate - today) / (1000 * 60 * 60 * 24));
+                        
+                        if (daysLeft >= 0 && daysLeft <= 30) {
+                          expiringSoonDocs.push({
+                            vehicle,
+                            documentType: doc.type,
+                            expiryDate: doc.expiry,
+                            daysLeft
+                          });
+                        }
+                      }
+                    });
+                  });
+                  
+                  const pdfContent = `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Vehicle Documents Expiring Soon Report</title>
+    <style>
+        @page { size: A4; margin: 15mm; }
+        body { font-family: Arial, sans-serif; margin: 0; padding: 10px; color: #333; line-height: 1.2; font-size: 11px; }
+        .header { text-align: center; border-bottom: 2px solid #f97316; padding-bottom: 10px; margin-bottom: 15px; }
+        table { border-collapse: collapse; width: 100%; font-size: 10px; }
+        th, td { padding: 8px; border: 1px solid #ddd; text-align: center; white-space: nowrap; }
+        th { background: linear-gradient(135deg, #f97316, #fb923c); color: white; font-weight: bold; }
+        .expiring { background: #fff7ed; }
+        .urgent { color: #dc2626; font-weight: bold; }
+        .warning { color: #f97316; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Vehicle Documents Expiring Soon Report</h1>
+        <p>Generated on ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}</p>
+        <p>Total Expiring Documents: ${expiringSoonDocs.length}</p>
+    </div>
+    
+    <table>
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Vehicle Type</th>
+                <th>License Number</th>
+                <th>Branch</th>
+                <th>Document Type</th>
+                <th>Expiry Date</th>
+                <th>Days Left</th>
+                <th>Priority</th>
+            </tr>
+        </thead>
+        <tbody>
+            ${expiringSoonDocs.sort((a, b) => a.daysLeft - b.daysLeft).map((doc, index) => `
+                <tr class="expiring">
+                    <td>${index + 1}</td>
+                    <td>${doc.vehicle.type || 'N/A'}</td>
+                    <td>${doc.vehicle.licenseNumber}</td>
+                    <td>${doc.vehicle.branchName}</td>
+                    <td>${doc.documentType}</td>
+                    <td>${new Date(doc.expiryDate).toLocaleDateString()}</td>
+                    <td class="${doc.daysLeft <= 7 ? 'urgent' : 'warning'}">${doc.daysLeft} days</td>
+                    <td class="${doc.daysLeft <= 7 ? 'urgent' : 'warning'}">${doc.daysLeft <= 7 ? 'URGENT' : 'HIGH'}</td>
+                </tr>
+            `).join('')}
+        </tbody>
+    </table>
+    
+    <div style="margin-top: 20px; text-align: center; font-size: 8px; color: #666;">
+        <p>Qatar Branch Management System - Vehicle Document Management</p>
+        <p>Priority: URGENT (≤7 days) | HIGH (8-30 days)</p>
+    </div>
+</body>
+</html>`;
+                  
+                  const printWindow = window.open('', '_blank');
+                  printWindow.document.write(pdfContent);
+                  printWindow.document.close();
+                  printWindow.focus();
+                  
+                  setTimeout(() => {
+                    printWindow.print();
+                    printWindow.close();
+                  }, 250);
+                }}
+                className="px-4 py-2 bg-white text-orange-600 rounded-lg hover:bg-orange-50 font-medium flex items-center space-x-2 border border-orange-200"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                <span>Download PDF</span>
+              </button>
             </div>
             
             {/* Mobile Card View */}
