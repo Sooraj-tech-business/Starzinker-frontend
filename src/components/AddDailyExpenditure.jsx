@@ -367,12 +367,12 @@ export default function AddDailyExpenditure({ onClose, onAddExpenditure, onSaveD
               <div className="text-sm text-gray-600">Income</div>
             </div>
             <div className="min-w-0">
-              <div className="text-lg sm:text-xl lg:text-2xl font-bold text-blue-600 break-words">{(totalOnlineDelivery - (formData.onlineDeliveries.find(d => d.platform === 'ATM')?.amount || 0)).toFixed(2)} QR</div>
+              <div className="text-lg sm:text-xl lg:text-2xl font-bold text-blue-600 break-words">{(totalOnlineDelivery - (parseFloat(formData.onlineDeliveries.find(d => d.platform === 'ATM')?.amount) || 0)).toFixed(2)} QR</div>
               <div className="text-xs text-gray-500">Online Delivery</div>
               <div className="text-xs text-gray-400">(Talabat + Snoonu + Keeta)</div>
             </div>
             <div className="min-w-0">
-              <div className="text-lg sm:text-xl lg:text-2xl font-bold text-orange-600 break-words">{(formData.onlineDeliveries.find(d => d.platform === 'ATM')?.amount || 0).toFixed(2)} QR</div>
+              <div className="text-lg sm:text-xl lg:text-2xl font-bold text-orange-600 break-words">{(parseFloat(formData.onlineDeliveries.find(d => d.platform === 'ATM')?.amount) || 0).toFixed(2)} QR</div>
               <div className="text-sm text-gray-600">ATM</div>
             </div>
             <div className="min-w-0">
