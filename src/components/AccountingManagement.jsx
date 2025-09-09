@@ -537,6 +537,144 @@ export default function AccountingManagement({ expenditures, onAddExpenditure, o
         
     </div>
     
+    <div class="section">
+        <h3>📊 Detailed Records</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Date</th>
+                    <th>Income</th>
+                    <th>Talabat</th>
+                    <th>Snoonu</th>
+                    <th>Keeta</th>
+                    <th>Total Online</th>
+                    <th>ATM</th>
+                    <th>Delivery Money</th>
+                    <th>Normal Expenses</th>
+                    <th>General Expenses</th>
+                    <th>Total Expenses</th>
+                    <th>Net Earnings</th>
+                    <th>Submitted By</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${branchData.expenditures.map((exp, index) => {
+                  const deliveryData = { Talabat: 0, Snoonu: 0, Keeta: 0, ATM: 0 };
+                  exp.onlineDeliveries?.forEach(d => {
+                    if (deliveryData.hasOwnProperty(d.platform)) {
+                      deliveryData[d.platform] = d.amount || 0;
+                    }
+                  });
+                  const totalOnline = deliveryData.Talabat + deliveryData.Snoonu + deliveryData.Keeta;
+                  
+                  const normalExpenses = exp.expenses?.filter(e => e.type === 'NORMAL EXPENSE').reduce((sum, e) => sum + (e.amount || 0), 0) || 0;
+                  const generalExpenses = exp.expenses?.filter(e => e.type === 'GENERAL EXPENSE').reduce((sum, e) => sum + (e.amount || 0), 0) || 0;
+                  
+                  return `
+                    <tr>
+                        <td>${index + 1}</td>
+                        <td>${new Date(exp.date).toLocaleDateString('en-GB')}</td>
+                        <td class="positive">${formatCurrency(exp.income)}</td>
+                        <td class="positive">${formatCurrency(deliveryData.Talabat)}</td>
+                        <td class="positive">${formatCurrency(deliveryData.Snoonu)}</td>
+                        <td class="positive">${formatCurrency(deliveryData.Keeta)}</td>
+                        <td class="positive">${formatCurrency(totalOnline)}</td>
+                        <td class="positive">${formatCurrency(deliveryData.ATM)}</td>
+                        <td class="positive">${formatCurrency(exp.deliveryMoney || 0)}</td>
+                        <td class="negative">${formatCurrency(normalExpenses)}</td>
+                        <td class="negative">${formatCurrency(generalExpenses)}</td>
+                        <td class="negative">${formatCurrency(exp.totalExpenses)}</td>
+                        <td class="${exp.earnings >= 0 ? 'positive' : 'negative'}">${formatCurrency(exp.earnings)}</td>
+                        <td>${exp.submittedBy}</td>
+                    </tr>
+                  `;
+                }).join('')}
+            </tbody>
+            <tfoot>
+                <tr style="background: #f3f4f6; font-weight: bold;">
+                    <td colspan="2">TOTALS</td>
+                    <td class="positive">${formatCurrency(branchData.totalIncome)}</td>
+                    <td class="positive">${(() => {
+                      let total = 0;
+                      branchData.expenditures.forEach(exp => {
+                        exp.onlineDeliveries?.forEach(d => {
+                          if (d.platform === 'Talabat') total += d.amount || 0;
+                        });
+                      });
+                      return formatCurrency(total);
+                    })()}</td>
+                    <td class="positive">${(() => {
+                      let total = 0;
+                      branchData.expenditures.forEach(exp => {
+                        exp.onlineDeliveries?.forEach(d => {
+                          if (d.platform === 'Snoonu') total += d.amount || 0;
+                        });
+                      });
+                      return formatCurrency(total);
+                    })()}</td>
+                    <td class="positive">${(() => {
+                      let total = 0;
+                      branchData.expenditures.forEach(exp => {
+                        exp.onlineDeliveries?.forEach(d => {
+                          if (d.platform === 'Keeta') total += d.amount || 0;
+                        });
+                      });
+                      return formatCurrency(total);
+                    })()}</td>
+                    <td class="positive">${(() => {
+                      let total = 0;
+                      branchData.expenditures.forEach(exp => {
+                        exp.onlineDeliveries?.forEach(d => {
+                          if (['Talabat', 'Snoonu', 'Keeta'].includes(d.platform)) {
+                            total += d.amount || 0;
+                          }
+                        });
+                      });
+                      return formatCurrency(total);
+                    })()}</td>
+                    <td class="positive">${(() => {
+                      let total = 0;
+                      branchData.expenditures.forEach(exp => {
+                        exp.onlineDeliveries?.forEach(d => {
+                          if (d.platform === 'ATM') total += d.amount || 0;
+                        });
+                      });
+                      return formatCurrency(total);
+                    })()}</td>
+                    <td class="positive">${(() => {
+                      let total = 0;
+                      branchData.expenditures.forEach(exp => {
+                        total += exp.deliveryMoney || 0;
+                      });
+                      return formatCurrency(total);
+                    })()}</td>
+                    <td class="negative">${(() => {
+                      let total = 0;
+                      branchData.expenditures.forEach(exp => {
+                        exp.expenses?.forEach(e => {
+                          if (e.type === 'NORMAL EXPENSE') total += e.amount || 0;
+                        });
+                      });
+                      return formatCurrency(total);
+                    })()}</td>
+                    <td class="negative">${(() => {
+                      let total = 0;
+                      branchData.expenditures.forEach(exp => {
+                        exp.expenses?.forEach(e => {
+                          if (e.type === 'GENERAL EXPENSE') total += e.amount || 0;
+                        });
+                      });
+                      return formatCurrency(total);
+                    })()}</td>
+                    <td class="negative">${formatCurrency(branchData.totalExpenses)}</td>
+                    <td class="${branchData.totalEarnings >= 0 ? 'positive' : 'negative'}">${formatCurrency(branchData.totalEarnings)}</td>
+                    <td>${branchData.recordCount} Records</td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+    
     <div class="footer">
         <p><strong>Report Summary:</strong> ${branchData.recordCount} daily entries analyzed for ${monthName} ${year}</p>
         <p><strong>Generated:</strong> ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}</p>
