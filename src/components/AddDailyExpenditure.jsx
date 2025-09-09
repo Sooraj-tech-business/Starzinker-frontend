@@ -361,14 +361,19 @@ export default function AddDailyExpenditure({ onClose, onAddExpenditure, onSaveD
         {/* Summary */}
         <div className="bg-gray-50 p-4 rounded-lg">
           <h3 className="text-lg font-medium text-gray-900 mb-3">Summary</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 text-center">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4 text-center">
             <div className="min-w-0">
               <div className="text-lg sm:text-xl lg:text-2xl font-bold text-green-600 break-words">{parseFloat(formData.income) || 0} QR</div>
               <div className="text-sm text-gray-600">Income</div>
             </div>
             <div className="min-w-0">
-              <div className="text-lg sm:text-xl lg:text-2xl font-bold text-blue-600 break-words">{totalOnlineDelivery.toFixed(2)} QR</div>
-              <div className="text-sm text-gray-600">Online Delivery</div>
+              <div className="text-lg sm:text-xl lg:text-2xl font-bold text-blue-600 break-words">{(totalOnlineDelivery - (formData.onlineDeliveries.find(d => d.platform === 'ATM')?.amount || 0)).toFixed(2)} QR</div>
+              <div className="text-xs text-gray-500">Online Delivery</div>
+              <div className="text-xs text-gray-400">(Talabat + Snoonu + Keeta)</div>
+            </div>
+            <div className="min-w-0">
+              <div className="text-lg sm:text-xl lg:text-2xl font-bold text-orange-600 break-words">{(formData.onlineDeliveries.find(d => d.platform === 'ATM')?.amount || 0).toFixed(2)} QR</div>
+              <div className="text-sm text-gray-600">ATM</div>
             </div>
             <div className="min-w-0">
               <div className="text-lg sm:text-xl lg:text-2xl font-bold text-purple-600 break-words">{totalDeliveryMoney.toFixed(2)} QR</div>
