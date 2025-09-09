@@ -361,25 +361,25 @@ export default function AddDailyExpenditure({ onClose, onAddExpenditure, onSaveD
         {/* Summary */}
         <div className="bg-gray-50 p-4 rounded-lg">
           <h3 className="text-lg font-medium text-gray-900 mb-3">Summary</h3>
-          <div className="grid grid-cols-5 gap-4 text-center">
-            <div>
-              <div className="text-2xl font-bold text-green-600">{parseFloat(formData.income) || 0} QR</div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 text-center">
+            <div className="min-w-0">
+              <div className="text-lg sm:text-xl lg:text-2xl font-bold text-green-600 break-words">{parseFloat(formData.income) || 0} QR</div>
               <div className="text-sm text-gray-600">Income</div>
             </div>
-            <div>
-              <div className="text-2xl font-bold text-blue-600">{totalOnlineDelivery.toFixed(2)} QR</div>
+            <div className="min-w-0">
+              <div className="text-lg sm:text-xl lg:text-2xl font-bold text-blue-600 break-words">{totalOnlineDelivery.toFixed(2)} QR</div>
               <div className="text-sm text-gray-600">Online Delivery</div>
             </div>
-            <div>
-              <div className="text-2xl font-bold text-purple-600">{totalDeliveryMoney.toFixed(2)} QR</div>
+            <div className="min-w-0">
+              <div className="text-lg sm:text-xl lg:text-2xl font-bold text-purple-600 break-words">{totalDeliveryMoney.toFixed(2)} QR</div>
               <div className="text-sm text-gray-600">Delivery Money</div>
             </div>
-            <div>
-              <div className="text-2xl font-bold text-red-600">{totalExpenses.toFixed(2)} QR</div>
+            <div className="min-w-0">
+              <div className="text-lg sm:text-xl lg:text-2xl font-bold text-red-600 break-words">{totalExpenses.toFixed(2)} QR</div>
               <div className="text-sm text-gray-600">Total Expenses</div>
             </div>
-            <div>
-              <div className={`text-2xl font-bold ${earnings >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+            <div className="min-w-0">
+              <div className={`text-lg sm:text-xl lg:text-2xl font-bold break-words ${earnings >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                 {earnings.toFixed(2)} QR
               </div>
               <div className="text-sm text-gray-600">Earnings</div>

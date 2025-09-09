@@ -185,47 +185,98 @@ export default function ManagerDashboard({ expenditures, onAddExpenditure, branc
       {/* View Modal */}
       <WideModal isOpen={showViewExpenditure} onClose={() => setShowViewExpenditure(false)}>
         {todaySubmission && (
-          <div className="bg-white p-6 rounded-lg">
+          <div className="bg-white p-6 rounded-lg max-h-[90vh] overflow-y-auto">
             <h2 className="text-xl font-semibold mb-4">Today's Expenditure Details</h2>
-            <div className="space-y-4">
-              <div className="grid grid-cols-3 gap-4 p-4 bg-gray-50 rounded">
+            <div className="space-y-6">
+              {/* Summary Cards */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 bg-gray-50 rounded">
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-green-600">{todaySubmission.income} QR</div>
+                  <div className="text-xl sm:text-2xl font-bold text-green-600">{todaySubmission.income} QR</div>
                   <div className="text-sm text-gray-600">Income</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-red-600">{todaySubmission.totalExpenses} QR</div>
+                  <div className="text-xl sm:text-2xl font-bold text-red-600">{todaySubmission.totalExpenses} QR</div>
                   <div className="text-sm text-gray-600">Total Expenses</div>
                 </div>
                 <div className="text-center">
-                  <div className={`text-2xl font-bold ${todaySubmission.earnings >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  <div className={`text-xl sm:text-2xl font-bold ${todaySubmission.earnings >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                     {todaySubmission.earnings} QR
                   </div>
                   <div className="text-sm text-gray-600">Earnings</div>
                 </div>
               </div>
+
+              {/* Online Delivery Income */}
+              {todaySubmission.onlineDeliveries && todaySubmission.onlineDeliveries.some(d => d.amount > 0) && (
+                <div>
+                  <h3 className="font-semibold mb-3 text-blue-700">Online Delivery Income</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {todaySubmission.onlineDeliveries.filter(d => d.amount > 0).map((delivery, index) => (
+                      <div key={index} className="p-3 bg-blue-50 rounded border border-blue-200">
+                        <div className="font-medium text-blue-800">{delivery.platform}</div>
+                        <div className="text-lg font-bold text-blue-600">{delivery.amount} QR</div>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="mt-2 text-right">
+                    <span className="text-sm font-medium text-blue-700">
+                      Total: {todaySubmission.totalOnlineDelivery || todaySubmission.onlineDeliveries.reduce((sum, d) => sum + (d.amount || 0), 0)} QR
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              {/* Delivery Money */}
+              {todaySubmission.deliveryMoney > 0 && (
+                <div>
+                  <h3 className="font-semibold mb-3 text-purple-700">Delivery Money</h3>
+                  <div className="p-4 bg-purple-50 rounded border border-purple-200">
+                    <div className="text-2xl font-bold text-purple-600">{todaySubmission.deliveryMoney} QR</div>
+                    <div className="text-sm text-purple-700">Total Commission Earned</div>
+                  </div>
+                </div>
+              )}
+
+              {/* Expense Breakdown */}
               <div>
-                <h3 className="font-semibold mb-2">Expense Breakdown:</h3>
+                <h3 className="font-semibold mb-3 text-red-700">Expense Breakdown</h3>
                 <div className="space-y-2">
                   {todaySubmission.expenses?.map((exp, index) => (
-                    <div key={index} className="flex justify-between p-2 bg-gray-50 rounded">
-                      <span>{exp.category}</span>
-                      <span className="font-semibold">{exp.amount} QR</span>
+                    <div key={index} className="flex justify-between items-center p-3 bg-red-50 rounded border border-red-200">
+                      <div>
+                        <div className="font-medium text-red-800">{exp.category}</div>
+                        <div className="text-xs text-red-600">{exp.type || 'NORMAL EXPENSE'}</div>
+                        {exp.description && <div className="text-xs text-gray-600">{exp.description}</div>}
+                      </div>
+                      <div className="text-lg font-bold text-red-600">{exp.amount} QR</div>
                     </div>
                   ))}
                 </div>
               </div>
+
+              {/* Notes */}
               {todaySubmission.notes && (
                 <div>
-                  <h3 className="font-semibold mb-2">Notes:</h3>
-                  <p className="text-gray-700">{todaySubmission.notes}</p>
+                  <h3 className="font-semibold mb-2 text-gray-700">Notes</h3>
+                  <div className="p-3 bg-gray-50 rounded border">
+                    <p className="text-gray-700">{todaySubmission.notes}</p>
+                  </div>
                 </div>
               )}
+
+              {/* Submission Info */}
+              <div className="border-t pt-4">
+                <div className="text-sm text-gray-500 space-y-1">
+                  <div><span className="font-medium">Submitted by:</span> {todaySubmission.submittedBy}</div>
+                  <div><span className="font-medium">Date:</span> {new Date(todaySubmission.date).toLocaleDateString('en-GB')}</div>
+                  <div><span className="font-medium">Branch:</span> {todaySubmission.branchName}</div>
+                </div>
+              </div>
             </div>
             <div className="mt-6 text-center">
               <button
                 onClick={() => setShowViewExpenditure(false)}
-                className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
+                className="px-6 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
               >
                 Close
               </button>
