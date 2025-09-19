@@ -262,17 +262,16 @@ export default function AddDailyExpenditure({ onClose, onAddExpenditure, onSaveD
 
         {/* Delivery Money */}
         <div>
-          <h3 className="text-lg font-medium text-gray-900 mb-4">Delivery Money</h3>
+          <h3 className="text-lg font-medium text-gray-900 mb-4">Own Delivery</h3>
           <div className="p-4 border border-purple-200 rounded-lg bg-purple-50">
-            <label className="block text-sm font-medium text-gray-700">Total Delivery Money (QR)</label>
+            <label className="block text-sm font-medium text-gray-700"> Own Delivery (QR)</label>
             <input
               type="number"
               name="deliveryMoney"
-              step="0.01"
               value={formData.deliveryMoney}
               onChange={handleChange}
-              placeholder="Enter total delivery money"
-              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm"
+              placeholder="Enter total own delivery money"
+              className="mt-1 block border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm"
             />
           </div>
         </div>

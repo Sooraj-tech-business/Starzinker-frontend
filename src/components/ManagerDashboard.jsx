@@ -95,6 +95,41 @@ export default function ManagerDashboard({ expenditures, onAddExpenditure, branc
             <h2 className="text-xl font-bold text-white">Daily Expenditure</h2>
             <p className="text-red-100 text-sm">{userBranch?.name}</p>
             <p className="text-red-100 text-xs">{new Date(getBusinessDate()).toLocaleDateString('en-GB')}</p>
+            
+            {/* Net Income Display */}
+            {(() => {
+              const currentDate = new Date(getBusinessDate());
+              const currentMonth = currentDate.getMonth() + 1;
+              const currentYear = currentDate.getFullYear();
+              
+              // Get all expenditures for current month up to today
+              const monthlyExpenditures = (expenditures || []).filter(exp => {
+                const expDate = new Date(exp.date);
+                return expDate.getMonth() + 1 === currentMonth && 
+                       expDate.getFullYear() === currentYear &&
+                       exp.branchId === userBranch?._id &&
+                       expDate <= currentDate;
+              });
+              
+              const netIncome = monthlyExpenditures.reduce((sum, exp) => sum + (exp.earnings || 0), 0);
+              
+              if (monthlyExpenditures.length > 0) {
+                return (
+                  <div className="mt-3 pt-3 border-t border-red-700">
+                    <div className="flex justify-between items-center">
+                      <span className="text-red-100 text-sm">📊 Net Income (This Month)</span>
+                      <span className={`text-lg font-bold ${netIncome >= 0 ? 'text-green-200' : 'text-orange-200'}`}>
+                        {netIncome.toFixed(0)} QR
+                      </span>
+                    </div>
+                    <div className="text-xs text-red-200 text-right">
+                      {monthlyExpenditures.length} days • Updated live
+                    </div>
+                  </div>
+                );
+              }
+              return null;
+            })()}
           </div>
           
           <div className="p-6">
