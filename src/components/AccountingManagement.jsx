@@ -235,7 +235,7 @@ export default function AccountingManagement({ expenditures, onAddExpenditure, o
                     }
                   });
                   
-                  let content = `<div style="font-weight: bold; color: #2563eb; margin-bottom: 8px;">${formatCurrency(totalDelivery)}</div>`;
+                  let content = `<div style="font-weight: bold; color: #2563eb; margin-bottom: 8px; font-size: 16px;">${formatCurrency(totalDelivery)}</div>`;
                   platforms.forEach(platform => {
                     const amount = deliveryData[platform] || 0;
                     if (amount > 0) {
@@ -246,7 +246,7 @@ export default function AccountingManagement({ expenditures, onAddExpenditure, o
                 })()}
             </td>
             <td style="text-align: center; padding: 8px;">
-                <div style="font-weight: bold; color: #ea580c;">
+                <div style="font-weight: bold; color: #ea580c; font-size: 16px;">
                     ${(() => {
                       let atmTotal = 0;
                       branchData.expenditures.forEach(exp => {
@@ -263,7 +263,7 @@ export default function AccountingManagement({ expenditures, onAddExpenditure, o
                 </div>
             </td>
             <td style="text-align: center; padding: 8px;">
-                <div style="font-weight: bold; color: #7c3aed;">
+                <div style="font-weight: bold; color: #7c3aed; font-size: 16px;">
                     ${(() => {
                       const totalDeliveryMoney = branchData.expenditures.reduce((sum, exp) => sum + (exp.deliveryMoney || 0), 0);
                       return formatCurrency(totalDeliveryMoney);
