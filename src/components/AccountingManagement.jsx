@@ -1716,6 +1716,41 @@ export default function AccountingManagement({ expenditures, onAddExpenditure, o
             <tr style="background: #f3f4f6; font-weight: bold;">
                 <td colspan="2">TOTALS</td>
                 <td class="positive">${formatCurrency(branchData.totalIncome)}</td>
+                <td class="negative">${(() => {
+                  let total = 0;
+                  branchData.expenditures.forEach(exp => {
+                    exp.expenses?.forEach(e => {
+                      if (e.type === 'NORMAL EXPENSE') total += e.amount || 0;
+                    });
+                  });
+                  return formatCurrency(total);
+                })()}</td>
+                <td class="negative">${(() => {
+                  let total = 0;
+                  branchData.expenditures.forEach(exp => {
+                    exp.expenses?.forEach(e => {
+                      if (e.type === 'GENERAL EXPENSE') total += e.amount || 0;
+                    });
+                  });
+                  return formatCurrency(total);
+                })()}</td>
+                <td class="negative">${formatCurrency(branchData.totalExpenses)}</td>
+                <td class="positive">${(() => {
+                  let total = 0;
+                  branchData.expenditures.forEach(exp => {
+                    exp.onlineDeliveries?.forEach(d => {
+                      if (d.platform === 'ATM') total += d.amount || 0;
+                    });
+                  });
+                  return formatCurrency(total);
+                })()}</td>
+                <td class="positive">${(() => {
+                  let total = 0;
+                  branchData.expenditures.forEach(exp => {
+                    total += exp.deliveryMoney || 0;
+                  });
+                  return formatCurrency(total);
+                })()}</td>
                 <td class="positive">${(() => {
                   let total = 0;
                   branchData.expenditures.forEach(exp => {
@@ -1754,41 +1789,6 @@ export default function AccountingManagement({ expenditures, onAddExpenditure, o
                   });
                   return formatCurrency(total);
                 })()}</td>
-                <td class="positive">${(() => {
-                  let total = 0;
-                  branchData.expenditures.forEach(exp => {
-                    exp.onlineDeliveries?.forEach(d => {
-                      if (d.platform === 'ATM') total += d.amount || 0;
-                    });
-                  });
-                  return formatCurrency(total);
-                })()}</td>
-                <td class="positive">${(() => {
-                  let total = 0;
-                  branchData.expenditures.forEach(exp => {
-                    total += exp.deliveryMoney || 0;
-                  });
-                  return formatCurrency(total);
-                })()}</td>
-                <td class="negative">${(() => {
-                  let total = 0;
-                  branchData.expenditures.forEach(exp => {
-                    exp.expenses?.forEach(e => {
-                      if (e.type === 'NORMAL EXPENSE') total += e.amount || 0;
-                    });
-                  });
-                  return formatCurrency(total);
-                })()}</td>
-                <td class="negative">${(() => {
-                  let total = 0;
-                  branchData.expenditures.forEach(exp => {
-                    exp.expenses?.forEach(e => {
-                      if (e.type === 'GENERAL EXPENSE') total += e.amount || 0;
-                    });
-                  });
-                  return formatCurrency(total);
-                })()}</td>
-                <td class="negative">${formatCurrency(branchData.totalExpenses)}</td>
                 <td class="${branchData.totalEarnings >= 0 ? 'positive' : 'negative'}">${formatCurrency(branchData.totalEarnings)}</td>
                 <td>${branchData.recordCount} Records</td>
             </tr>
