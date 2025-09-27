@@ -360,19 +360,22 @@ export default function AccountingManagement({ expenditures, onAddExpenditure, o
             <table style="width: 100%;">
                 <tr><th style="background: linear-gradient(135deg, #f97316, #fb923c); color: white; text-shadow: 1px 1px 2px rgba(0,0,0,0.3);">Category</th><th style="background: linear-gradient(135deg, #f97316, #fb923c); color: white; text-shadow: 1px 1px 2px rgba(0,0,0,0.3);">Amount</th></tr>
                 ${(() => {
-                  const normalExpenses = {};
+                  const normalExpenses = new Map();
                   let normalTotal = 0;
                   
                   branchData.expenditures.forEach(exp => {
                     exp.expenses.forEach(expense => {
                       if ((expense.type || 'NORMAL EXPENSE') === 'NORMAL EXPENSE') {
-                        normalExpenses[expense.category] = (normalExpenses[expense.category] || 0) + expense.amount;
+                        const categoryKey = expense.category.trim().toUpperCase();
+                        normalExpenses.set(categoryKey, (normalExpenses.get(categoryKey) || 0) + expense.amount);
                         normalTotal += expense.amount;
                       }
                     });
                   });
                   
-                  const sortedNormal = Object.entries(normalExpenses).sort(([,a], [,b]) => b - a);
+                  const normalExpensesObj = Object.fromEntries(normalExpenses);
+                  
+                  const sortedNormal = Object.entries(normalExpensesObj).sort(([,a], [,b]) => b - a);
                   
                   let content = '';
                   if (sortedNormal.length === 0) {
@@ -394,19 +397,22 @@ export default function AccountingManagement({ expenditures, onAddExpenditure, o
             <table style="width: 100%;">
                 <tr><th style="background: linear-gradient(135deg, #ec4899, #f472b6); color: white; text-shadow: 1px 1px 2px rgba(0,0,0,0.3);">Category</th><th style="background: linear-gradient(135deg, #ec4899, #f472b6); color: white; text-shadow: 1px 1px 2px rgba(0,0,0,0.3);">Amount</th></tr>
                 ${(() => {
-                  const generalExpenses = {};
+                  const generalExpenses = new Map();
                   let generalTotal = 0;
                   
                   branchData.expenditures.forEach(exp => {
                     exp.expenses.forEach(expense => {
                       if (expense.type === 'GENERAL EXPENSE') {
-                        generalExpenses[expense.category] = (generalExpenses[expense.category] || 0) + expense.amount;
+                        const categoryKey = expense.category.trim().toUpperCase();
+                        generalExpenses.set(categoryKey, (generalExpenses.get(categoryKey) || 0) + expense.amount);
                         generalTotal += expense.amount;
                       }
                     });
                   });
                   
-                  const sortedGeneral = Object.entries(generalExpenses).sort(([,a], [,b]) => b - a);
+                  const generalExpensesObj = Object.fromEntries(generalExpenses);
+                  
+                  const sortedGeneral = Object.entries(generalExpensesObj).sort(([,a], [,b]) => b - a);
                   
                   let content = '';
                   if (sortedGeneral.length === 0) {
@@ -461,7 +467,8 @@ export default function AccountingManagement({ expenditures, onAddExpenditure, o
                       const expenseCategories = {};
                       branchData.expenditures.forEach(exp => {
                         exp.expenses.forEach(expense => {
-                          expenseCategories[expense.category] = (expenseCategories[expense.category] || 0) + expense.amount;
+                          const categoryKey = expense.category.toUpperCase();
+                          expenseCategories[categoryKey] = (expenseCategories[categoryKey] || 0) + expense.amount;
                         });
                       });
                       
@@ -488,7 +495,8 @@ export default function AccountingManagement({ expenditures, onAddExpenditure, o
                       const expenseCategories = {};
                       branchData.expenditures.forEach(exp => {
                         exp.expenses.forEach(expense => {
-                          expenseCategories[expense.category] = (expenseCategories[expense.category] || 0) + expense.amount;
+                          const categoryKey = expense.category.toUpperCase();
+                          expenseCategories[categoryKey] = (expenseCategories[categoryKey] || 0) + expense.amount;
                         });
                       });
                       
@@ -509,7 +517,8 @@ export default function AccountingManagement({ expenditures, onAddExpenditure, o
                       const expenseCategories = {};
                       branchData.expenditures.forEach(exp => {
                         exp.expenses.forEach(expense => {
-                          expenseCategories[expense.category] = (expenseCategories[expense.category] || 0) + expense.amount;
+                          const categoryKey = expense.category.toUpperCase();
+                          expenseCategories[categoryKey] = (expenseCategories[categoryKey] || 0) + expense.amount;
                         });
                       });
                       
@@ -571,7 +580,8 @@ export default function AccountingManagement({ expenditures, onAddExpenditure, o
     const breakdown = {};
     filteredExpenditures.forEach(exp => {
       exp.expenses.forEach(expense => {
-        breakdown[expense.category] = (breakdown[expense.category] || 0) + expense.amount;
+        const categoryKey = expense.category.toUpperCase();
+        breakdown[categoryKey] = (breakdown[categoryKey] || 0) + expense.amount;
       });
     });
     return breakdown;
