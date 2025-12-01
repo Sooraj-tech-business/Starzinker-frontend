@@ -21,7 +21,7 @@ ChartJS.register(
   ArcElement
 );
 
-export default function BranchManagement({ branches, users, onEditBranch, onViewBranch, onAddBranch, onManageShareholders }) {
+export default function BranchManagement({ branches, users, onEditBranch, onViewBranch, onAddBranch, onManageShareholders, onManageZakath }) {
   const [filteredBranches, setFilteredBranches] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [locationFilter, setLocationFilter] = useState('all');
@@ -500,6 +500,12 @@ export default function BranchManagement({ branches, users, onEditBranch, onView
                     >
                       Shareholders
                     </button>
+                    <button
+                      onClick={() => onManageZakath && onManageZakath(branch)}
+                      className="flex-1 px-3 py-2 text-sm bg-green-100 text-green-700 rounded-md hover:bg-green-200"
+                    >
+                      Zakath
+                    </button>
                   </div>
                 </div>
               </div>
@@ -614,6 +620,14 @@ export default function BranchManagement({ branches, users, onEditBranch, onView
                         Working Employees: {users?.filter(user => user.workLocation === branch.name).length || 0}
                       </div>
                       <div className="text-sm text-gray-500 flex items-center">
+                        <span className="w-2 h-2 bg-green-400 rounded-full mr-2"></span>
+                        Working Salary: {(() => {
+                          const workingEmployees = users?.filter(user => user.workLocation === branch.name) || [];
+                          const totalSalary = workingEmployees.reduce((sum, emp) => sum + (emp.salary || 0), 0);
+                          return `${totalSalary.toLocaleString()} QR`;
+                        })()}
+                      </div>
+                      <div className="text-sm text-gray-500 flex items-center">
                         <span className="w-2 h-2 bg-orange-400 rounded-full mr-2"></span>
                         {branch.vehicles?.length || 0} vehicles
                       </div>
@@ -670,6 +684,15 @@ export default function BranchManagement({ branches, users, onEditBranch, onView
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                           </svg>
                           Shareholders
+                        </button>
+                        <button 
+                          onClick={() => onManageZakath && onManageZakath(branch)}
+                          className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-green-700 bg-gradient-to-r from-green-100 to-emerald-100 hover:from-green-200 hover:to-emerald-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-all duration-200 shadow-sm"
+                        >
+                          <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                          </svg>
+                          Zakath
                         </button>
                       </div>
                     </td>

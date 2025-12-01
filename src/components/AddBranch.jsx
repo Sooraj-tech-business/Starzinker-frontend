@@ -27,7 +27,8 @@ export default function AddBranch({ onClose, onAddBranch, users }) {
     bankAccountNumber: '',
     ibanNumber: '',
     branchDocuments: {},
-
+    // ZAKATH percentage
+    zakathPercentage: 2.5,
 
     vehicles: []
   });

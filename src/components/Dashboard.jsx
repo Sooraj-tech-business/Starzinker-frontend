@@ -23,6 +23,7 @@ import AddBranch from './AddBranch';
 import EditBranchComplete from './EditBranchComplete';
 import EditVehicle from './EditVehicle';
 import ShareholderManagement from './ShareholderManagement';
+import ZakathManagement from './ZakathManagement';
 import Modal from './Modal';
 import WideModal from './WideModal';
 
@@ -99,10 +100,12 @@ export default function Dashboard({ onLogout }) {
   const [showViewEmployee, setShowViewEmployee] = useState(false);
   const [showViewBranch, setShowViewBranch] = useState(false);
   const [showShareholderManagement, setShowShareholderManagement] = useState(false);
+  const [showZakathManagement, setShowZakathManagement] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
   const [selectedBranch, setSelectedBranch] = useState(null);
   const [selectedVehicle, setSelectedVehicle] = useState(null);
   const [selectedBranchForShareholders, setSelectedBranchForShareholders] = useState(null);
+  const [selectedBranchForZakath, setSelectedBranchForZakath] = useState(null);
   const [viewEmployee, setViewEmployee] = useState(null);
   const [viewBranch, setViewBranch] = useState(null);
   const [users, setUsers] = useState(mockEmployees);
@@ -650,6 +653,40 @@ export default function Dashboard({ onLogout }) {
     }
   };
 
+  // Handle updating zakath percentage
+  const handleUpdateZakath = async (branchId, zakathPercentage) => {
+    try {
+      console.log('Updating zakath for branch:', branchId, zakathPercentage);
+      
+      // Find the branch to update
+      const branch = branches.find(b => b._id === branchId);
+      if (!branch) {
+        throw new Error('Branch not found');
+      }
+      
+      // Update the branch with new zakath percentage
+      const updatedBranchData = {
+        ...branch,
+        zakathPercentage: zakathPercentage
+      };
+      
+      // Call API to update branch
+      const response = await api.put(`/api/branches/${branchId}`, updatedBranchData);
+      console.log('Zakath update response:', response.data);
+      
+      // Update local state
+      setBranches(branches.map(b => 
+        b._id === branchId ? { ...b, zakathPercentage: zakathPercentage } : b
+      ));
+      
+      alert('Zakath percentage updated successfully!');
+    } catch (error) {
+      console.error('Error updating zakath:', error);
+      alert(`Failed to update zakath: ${error.message}. Please try again.`);
+      throw error;
+    }
+  };
+
   // Handle deleting a vehicle
   const handleDeleteVehicle = async (licenseNumber, branchId) => {
     if (window.confirm('Are you sure you want to delete this vehicle?')) {
@@ -770,6 +807,10 @@ export default function Dashboard({ onLogout }) {
                     setSelectedBranchForShareholders(branch);
                     setShowShareholderManagement(true);
                   }}
+                  onManageZakath={(branch) => {
+                    setSelectedBranchForZakath(branch);
+                    setShowZakathManagement(true);
+                  }}
                 />
               )}
 
@@ -885,6 +926,17 @@ export default function Dashboard({ onLogout }) {
             setSelectedBranchForShareholders(null);
           }}
           onUpdateShareholders={handleUpdateShareholders}
+        />
+      )}
+
+      {showZakathManagement && (
+        <ZakathManagement 
+          branch={selectedBranchForZakath}
+          onClose={() => {
+            setShowZakathManagement(false);
+            setSelectedBranchForZakath(null);
+          }}
+          onUpdateZakath={handleUpdateZakath}
         />
       )}
     </div>

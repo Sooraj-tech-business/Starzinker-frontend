@@ -3,6 +3,9 @@ import WideModal from './WideModal';
 import AddDailyExpenditure from './AddDailyExpenditure';
 import ViewExpenditure from './ViewExpenditure';
 import EditExpenditure from './EditExpenditure';
+import MonthlySavingsManagement from './MonthlySavingsManagement';
+import ShareholderProfitSummary from './ShareholderProfitSummary';
+import api from '../api/config';
 
 import { Doughnut, Line, Bar } from 'react-chartjs-2';
 import {
@@ -40,7 +43,10 @@ export default function AccountingManagement({ expenditures, onAddExpenditure, o
   const [showAddExpenditure, setShowAddExpenditure] = useState(false);
   const [showViewExpenditure, setShowViewExpenditure] = useState(false);
   const [showEditExpenditure, setShowEditExpenditure] = useState(false);
+  const [showMonthlySavings, setShowMonthlySavings] = useState(false);
+  const [showShareholderSummary, setShowShareholderSummary] = useState(false);
   const [selectedExpenditure, setSelectedExpenditure] = useState(null);
+  const [selectedBranchForSavings, setSelectedBranchForSavings] = useState(null);
   const [selectedBranchDetails, setSelectedBranchDetails] = useState(persistentState.selectedBranchDetails);
   const [viewMode, setViewMode] = useState(persistentState.viewMode);
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
@@ -115,7 +121,8 @@ export default function AccountingManagement({ expenditures, onAddExpenditure, o
         totalEarnings,
         recordCount: branchExpenditures.length,
         expenseBreakdown,
-        expenditures: branchExpenditures
+        expenditures: branchExpenditures,
+        monthlySavings: [] // Will be populated when needed
       };
     });
     
@@ -144,7 +151,15 @@ export default function AccountingManagement({ expenditures, onAddExpenditure, o
   const formatDate = (dateString) => new Date(dateString).toLocaleDateString();
 
   // PDF Download Function
-  const downloadBranchPDF = (branchData, month, year, returnContent = false) => {
+  const downloadBranchPDF = async (branchData, month, year, returnContent = false) => {
+    // Fetch monthly savings for this branch
+    try {
+      const response = await api.get(`/api/monthly-savings/${branchData._id}/${month}/${year}`);
+      branchData.monthlySavings = response.data.savings || [];
+    } catch (error) {
+      console.error('Error fetching monthly savings for PDF:', error);
+      branchData.monthlySavings = [];
+    }
     const monthName = months.find(m => m.value === parseInt(month))?.label;
     
     // Create A4 PDF content
@@ -326,24 +341,62 @@ export default function AccountingManagement({ expenditures, onAddExpenditure, o
     ${(() => {
       if (branchData.shareholders && branchData.shareholders.length > 0) {
         const totalProfit = branchData.totalEarnings;
+        const zakathPercentage = branchData.zakathPercentage || 0;
+        const zakathAmount = (totalProfit * zakathPercentage) / 100;
+        const profitAfterZakath = totalProfit - zakathAmount;
+        
+        // Get monthly savings total
+        const monthlySavingsTotal = branchData.monthlySavings ? branchData.monthlySavings.reduce((sum, saving) => sum + (saving.amount || 0), 0) : 0;
+        const profitAfterSavings = profitAfterZakath - monthlySavingsTotal;
+        
         return `
         <div style="margin-top: 20px;">
             <h2 style="text-align: center; color: #7c3aed; margin-bottom: 20px;">Shareholder Details</h2>
         </div>
+        
+        ${zakathPercentage > 0 ? `
+        <div style="background: #f0fdf4; padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #22c55e;">
+            <h3 style="color: #16a34a; margin-bottom: 10px; font-size: 14px;">🕌 Zakath Calculation</h3>
+            <table style="width: 100%; font-size: 10px;">
+                <tr><th style="background: #22c55e; color: white;">Net Profit</th><th style="background: #22c55e; color: white;">Zakath %</th><th style="background: #22c55e; color: white;">Zakath Amount</th><th style="background: #22c55e; color: white;">Profit After Zakath</th></tr>
+                <tr><td style="text-align: center;">${formatCurrency(totalProfit)}</td><td style="text-align: center;">${zakathPercentage}%</td><td style="text-align: center;">${formatCurrency(zakathAmount)}</td><td style="text-align: center;">${formatCurrency(profitAfterZakath)}</td></tr>
+            </table>
+        </div>` : ''}
+        
+        ${monthlySavingsTotal > 0 ? `
+        <div style="background: #fef3c7; padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #f59e0b;">
+            <h3 style="color: #d97706; margin-bottom: 10px; font-size: 14px;">💰 Monthly Savings Deduction</h3>
+            <table style="width: 100%; font-size: 10px;">
+                <tr><th style="background: #f59e0b; color: white;">Name</th><th style="background: #f59e0b; color: white;">Amount</th></tr>
+                <tr><td style="text-align: center;">Amount</td><td style="text-align: center;">${formatCurrency(profitAfterZakath)}</td></tr>
+                ${branchData.monthlySavings.map(saving => `
+                    <tr>
+                        <td style="text-align: center;">${saving.name}</td>
+                        <td style="text-align: center;">-${formatCurrency(saving.amount)}</td>
+                    </tr>
+                `).join('')}
+                <tr style="background: #fef3c7; font-weight: bold;">
+                    <td style="text-align: center;">Available for Distribution</td>
+                    <td style="text-align: center;">${formatCurrency(profitAfterSavings)}</td>
+                </tr>
+            </table>
+        </div>` : ''}
+        
         <div style="background: #f8fafc; padding: 20px; border-radius: 12px; margin-top: 15px; border-top: 3px solid #7c3aed;">
             <h3 style="color: #7c3aed; margin-bottom: 15px;">👥 Shareholder Profit Distribution</h3>
             <table style="width: 100%;">
-                <tr><th style="background: linear-gradient(135deg, #7c3aed, #a855f7); color: white; text-shadow: 1px 1px 2px rgba(0,0,0,0.3);">Shareholder</th><th style="background: linear-gradient(135deg, #7c3aed, #a855f7); color: white; text-shadow: 1px 1px 2px rgba(0,0,0,0.3);">QID</th><th style="background: linear-gradient(135deg, #7c3aed, #a855f7); color: white; text-shadow: 1px 1px 2px rgba(0,0,0,0.3);">Share %</th><th style="background: linear-gradient(135deg, #7c3aed, #a855f7); color: white; text-shadow: 1px 1px 2px rgba(0,0,0,0.3);">Profit Share</th></tr>
+                <tr><th style="background: linear-gradient(135deg, #7c3aed, #a855f7); color: white; text-shadow: 1px 1px 2px rgba(0,0,0,0.3);">Shareholder</th><th style="background: linear-gradient(135deg, #7c3aed, #a855f7); color: white; text-shadow: 1px 1px 2px rgba(0,0,0,0.3);">QID</th><th style="background: linear-gradient(135deg, #7c3aed, #a855f7); color: white; text-shadow: 1px 1px 2px rgba(0,0,0,0.3);">Share %</th><th style="background: linear-gradient(135deg, #7c3aed, #a855f7); color: white; text-shadow: 1px 1px 2px rgba(0,0,0,0.3);">Zakath %</th><th style="background: linear-gradient(135deg, #7c3aed, #a855f7); color: white; text-shadow: 1px 1px 2px rgba(0,0,0,0.3);">Profit Share</th></tr>
                 ${branchData.shareholders.map(shareholder => {
-                  const profitShare = (totalProfit * shareholder.sharePercentage) / 100;
+                  const profitShare = (profitAfterSavings * shareholder.sharePercentage) / 100;
                   return `<tr>
                     <td style="text-align: center;">${shareholder.name}</td>
                     <td style="text-align: center;">${shareholder.quid}</td>
                     <td style="text-align: center;">${shareholder.sharePercentage}%</td>
+                    <td style="text-align: center;">${shareholder.zakathPercentage || 0}%</td>
                     <td style="text-align: center;">${formatCurrency(profitShare)}</td>
                   </tr>`;
                 }).join('')}
-                <tr style="background: #faf5ff;"><td style="text-align: center;"><strong>TOTAL</strong></td><td style="text-align: center;"></td><td style="text-align: center;"><strong>${branchData.shareholders.reduce((sum, s) => sum + s.sharePercentage, 0)}%</strong></td><td style="text-align: center;"><strong>${formatCurrency(totalProfit)}</strong></td></tr>
+                <tr style="background: #faf5ff;"><td style="text-align: center;"><strong>TOTAL</strong></td><td style="text-align: center;"></td><td style="text-align: center;"><strong>${branchData.shareholders.reduce((sum, s) => sum + s.sharePercentage, 0)}%</strong></td><td style="text-align: center;"></td><td style="text-align: center;"><strong>${formatCurrency(profitAfterSavings)}</strong></td></tr>
             </table>
         </div>`;
       }
@@ -1248,6 +1301,44 @@ export default function AccountingManagement({ expenditures, onAddExpenditure, o
                     })()}
                   </span>
                 </div>
+                
+                <div>
+                  <label className="block text-xs text-gray-600 mb-1">Deduction %</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    placeholder="Enter percentage"
+                    className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-orange-500"
+                    onChange={(e) => {
+                      const percentage = parseFloat(e.target.value) || 0;
+                      const atmTotal = (() => {
+                        let total = 0;
+                        branchData.expenditures.forEach(exp => {
+                          if (exp.atmIncome) total += exp.atmIncome;
+                          if (exp.onlineDeliveries) {
+                            exp.onlineDeliveries.forEach(delivery => {
+                              if (delivery.platform === 'ATM') total += delivery.amount;
+                            });
+                          }
+                        });
+                        return total;
+                      })();
+                      const deduction = (atmTotal * percentage) / 100;
+                      const deductionElement = e.target.parentElement.nextElementSibling;
+                      if (deductionElement && percentage > 0) {
+                        deductionElement.style.display = 'flex';
+                        deductionElement.querySelector('.deduction-amount').textContent = `-${formatCurrency(deduction)}`;
+                      } else if (deductionElement) {
+                        deductionElement.style.display = 'none';
+                      }
+                    }}
+                  />
+                </div>
+                
+                <div className="flex justify-between items-center text-sm" style={{display: 'none'}}>
+                  <span className="text-red-600">Deduction</span>
+                  <span className="font-medium text-red-600 deduction-amount">-0 QR</span>
+                </div>
               </div>
             </div>
           </div>
@@ -1329,12 +1420,22 @@ export default function AccountingManagement({ expenditures, onAddExpenditure, o
 
         {/* PDF Report Section */}
         <div className="bg-white p-6 rounded-xl shadow-lg mb-8">
-          <div className="flex justify-end items-center">
+          <div className="flex justify-between items-center">
+            <button
+              onClick={() => {
+                setSelectedBranchForSavings(branchData);
+                setShowMonthlySavings(true);
+              }}
+              className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors flex items-center space-x-2"
+            >
+              <span>💰</span>
+              <span>Manage Savings</span>
+            </button>
             <div className="flex space-x-3">
               <button
-                onClick={() => {
+                onClick={async () => {
                   const monthName = months.find(m => m.value === parseInt(selectedMonth))?.label;
-                  const fullPdfContent = downloadBranchPDF(branchData, selectedMonth, selectedYear, true);
+                  const fullPdfContent = await downloadBranchPDF(branchData, selectedMonth, selectedYear, true);
                   const blob = new Blob([fullPdfContent], { type: 'text/html' });
                   const url = URL.createObjectURL(blob);
                   window.open(url, '_blank');
@@ -1999,6 +2100,19 @@ export default function AccountingManagement({ expenditures, onAddExpenditure, o
             branches={branches}
           />
         </WideModal>
+
+        {/* Monthly Savings Modal */}
+        {showMonthlySavings && (
+          <MonthlySavingsManagement 
+            branch={selectedBranchForSavings}
+            month={selectedMonth}
+            year={selectedYear}
+            onClose={() => {
+              setShowMonthlySavings(false);
+              setSelectedBranchForSavings(null);
+            }}
+          />
+        )}
       </div>
     );
   }
@@ -2017,6 +2131,13 @@ export default function AccountingManagement({ expenditures, onAddExpenditure, o
             className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
           >
             View Detailed Analytics
+          </button>
+          <button
+            onClick={() => setShowShareholderSummary(true)}
+            className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors flex items-center space-x-2"
+          >
+            <span>👥</span>
+            <span>Shareholder Summary</span>
           </button>
           <button
             onClick={() => setShowAddExpenditure(true)}
@@ -2177,10 +2298,12 @@ export default function AccountingManagement({ expenditures, onAddExpenditure, o
               <div className="p-6">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-lg font-semibold text-gray-800">{branch.name}</h3>
-                  <div className={`px-3 py-1 rounded-full text-xs font-medium ${
-                    branch.recordCount > 0 ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'
-                  }`}>
-                    {branch.recordCount > 0 ? 'Active' : 'No Data'}
+                  <div className="flex space-x-2">
+                    <div className={`px-3 py-1 rounded-full text-xs font-medium ${
+                      branch.recordCount > 0 ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'
+                    }`}>
+                      {branch.recordCount > 0 ? 'Active' : 'No Data'}
+                    </div>
                   </div>
                 </div>
 
@@ -2241,6 +2364,29 @@ export default function AccountingManagement({ expenditures, onAddExpenditure, o
           branches={branches}
         />
       </WideModal>
+
+      {/* Monthly Savings Modal */}
+      {showMonthlySavings && (
+        <MonthlySavingsManagement 
+          branch={selectedBranchForSavings}
+          month={selectedMonth}
+          year={selectedYear}
+          onClose={() => {
+            setShowMonthlySavings(false);
+            setSelectedBranchForSavings(null);
+          }}
+        />
+      )}
+
+      {/* Shareholder Profit Summary Modal */}
+      {showShareholderSummary && (
+        <ShareholderProfitSummary 
+          month={selectedMonth}
+          year={selectedYear}
+          branches={Object.values(branchAnalytics)}
+          onClose={() => setShowShareholderSummary(false)}
+        />
+      )}
 
       {/* Overview Analytics Modal */}
       <WideModal isOpen={showAnalyticsModal} onClose={() => setShowAnalyticsModal(false)}>

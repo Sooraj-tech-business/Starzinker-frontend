@@ -2,7 +2,7 @@ export default function ViewBranch({ branch, users, onClose }) {
   if (!branch) return null;
 
   // Get employees assigned to this branch
-  const branchEmployees = users?.filter(user => user.branch === branch.name) || [];
+  const branchEmployees = users?.filter(user => user.workLocation === branch.name) || [];
 
   return (
     <div className="bg-white rounded-xl shadow-2xl max-h-[90vh] overflow-y-auto w-full">
@@ -116,30 +116,64 @@ export default function ViewBranch({ branch, users, onClose }) {
               </svg>
               Branch Employees ({branchEmployees.length})
             </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {branchEmployees.map((employee, index) => (
-                <div key={index} className="bg-white rounded-lg p-4 border border-gray-200 hover:shadow-md transition-shadow">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center">
-                      <span className="text-sm font-medium text-indigo-800">
-                        {employee.name.charAt(0).toUpperCase()}
-                      </span>
-                    </div>
-                    <div className="flex-1">
-                      <div className="text-sm font-medium text-gray-900">{employee.name}</div>
-                      <div className="text-sm text-gray-500">{employee.designation || employee.role}</div>
-                      <div className="text-xs text-gray-400">{employee.email}</div>
-                    </div>
-                    <div className="text-right">
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        employee.status === 'Working' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
-                      }`}>
-                        {employee.status || 'N/A'}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              ))}
+            <div className="overflow-x-auto bg-white rounded-lg shadow">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-indigo-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-indigo-700 uppercase tracking-wider">Employee</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-indigo-700 uppercase tracking-wider">Designation</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-indigo-700 uppercase tracking-wider">Email</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-indigo-700 uppercase tracking-wider">Salary</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-indigo-700 uppercase tracking-wider">Status</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {branchEmployees.map((employee, index) => (
+                    <tr key={index} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center">
+                          <div className="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center">
+                            <span className="text-sm font-medium text-indigo-800">
+                              {employee.name.charAt(0).toUpperCase()}
+                            </span>
+                          </div>
+                          <div className="ml-4">
+                            <div className="text-sm font-medium text-gray-900">{employee.name}</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {employee.designation || employee.role || 'N/A'}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {employee.email || 'N/A'}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-600">
+                        {employee.salary ? `${employee.salary.toLocaleString()} QR` : 'N/A'}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          employee.status === 'Working' ? 'bg-green-100 text-green-800' :
+                          employee.status === 'On Leave' ? 'bg-yellow-100 text-yellow-800' :
+                          employee.status === 'Vacation' ? 'bg-blue-100 text-blue-800' :
+                          'bg-gray-100 text-gray-800'
+                        }`}>
+                          {employee.status || 'N/A'}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+                <tfoot className="bg-gray-50">
+                  <tr>
+                    <td colSpan="3" className="px-6 py-3 text-sm font-medium text-gray-700">Total Salary:</td>
+                    <td className="px-6 py-3 text-sm font-bold text-green-600">
+                      {branchEmployees.reduce((sum, emp) => sum + (emp.salary || 0), 0).toLocaleString()} QR
+                    </td>
+                    <td className="px-6 py-3"></td>
+                  </tr>
+                </tfoot>
+              </table>
             </div>
           </div>
         )}

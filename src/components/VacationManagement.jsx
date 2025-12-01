@@ -141,38 +141,36 @@ export default function VacationManagement({ users }) {
       return;
     }
 
-    // Calculate end date based on duration
+    // Calculate end date based on duration (30 days per month)
     const startDate = new Date(formData.startDate);
     let endDate = new Date(startDate);
+    let daysToAdd = 0;
     
     switch (formData.duration) {
       case '1week':
-        endDate.setDate(startDate.getDate() + 6);
+        daysToAdd = 6; // 7 days total (including start date)
         break;
       case '2weeks':
-        endDate.setDate(startDate.getDate() + 13);
+        daysToAdd = 13; // 14 days total
         break;
       case '1month':
-        endDate.setMonth(startDate.getMonth() + 1);
-        endDate.setDate(startDate.getDate() - 1);
+        daysToAdd = 29; // 30 days total
         break;
       case '2months':
-        endDate.setMonth(startDate.getMonth() + 2);
-        endDate.setDate(startDate.getDate() - 1);
+        daysToAdd = 59; // 60 days total (2 * 30)
         break;
       case '3months':
-        endDate.setMonth(startDate.getMonth() + 3);
-        endDate.setDate(startDate.getDate() - 1);
+        daysToAdd = 89; // 90 days total (3 * 30)
         break;
       case '6months':
-        endDate.setMonth(startDate.getMonth() + 6);
-        endDate.setDate(startDate.getDate() - 1);
+        daysToAdd = 179; // 180 days total (6 * 30)
         break;
       case '1year':
-        endDate.setFullYear(startDate.getFullYear() + 1);
-        endDate.setDate(startDate.getDate() - 1);
+        daysToAdd = 359; // 360 days total (12 * 30)
         break;
     }
+    
+    endDate.setDate(startDate.getDate() + daysToAdd);
 
     const vacationData = {
       ...formData,
@@ -207,7 +205,7 @@ export default function VacationManagement({ users }) {
   const handleEdit = (vacation) => {
     setEditingVacation(vacation);
     
-    // Calculate duration from start and end dates
+    // Calculate duration from start and end dates (30 days per month)
     const startDate = new Date(vacation.startDate);
     const endDate = new Date(vacation.endDate);
     const diffTime = Math.abs(endDate - startDate);
@@ -216,10 +214,10 @@ export default function VacationManagement({ users }) {
     let duration = '';
     if (diffDays <= 7) duration = '1week';
     else if (diffDays <= 14) duration = '2weeks';
-    else if (diffDays <= 31) duration = '1month';
-    else if (diffDays <= 62) duration = '2months';
-    else if (diffDays <= 93) duration = '3months';
-    else if (diffDays <= 186) duration = '6months';
+    else if (diffDays <= 30) duration = '1month';
+    else if (diffDays <= 60) duration = '2months';
+    else if (diffDays <= 90) duration = '3months';
+    else if (diffDays <= 180) duration = '6months';
     else duration = '1year';
     
     setFormData({
