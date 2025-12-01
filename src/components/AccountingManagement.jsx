@@ -385,18 +385,17 @@ export default function AccountingManagement({ expenditures, onAddExpenditure, o
         <div style="background: #f8fafc; padding: 20px; border-radius: 12px; margin-top: 15px; border-top: 3px solid #7c3aed;">
             <h3 style="color: #7c3aed; margin-bottom: 15px;">👥 Shareholder Profit Distribution</h3>
             <table style="width: 100%;">
-                <tr><th style="background: linear-gradient(135deg, #7c3aed, #a855f7); color: white; text-shadow: 1px 1px 2px rgba(0,0,0,0.3);">Shareholder</th><th style="background: linear-gradient(135deg, #7c3aed, #a855f7); color: white; text-shadow: 1px 1px 2px rgba(0,0,0,0.3);">QID</th><th style="background: linear-gradient(135deg, #7c3aed, #a855f7); color: white; text-shadow: 1px 1px 2px rgba(0,0,0,0.3);">Share %</th><th style="background: linear-gradient(135deg, #7c3aed, #a855f7); color: white; text-shadow: 1px 1px 2px rgba(0,0,0,0.3);">Zakath %</th><th style="background: linear-gradient(135deg, #7c3aed, #a855f7); color: white; text-shadow: 1px 1px 2px rgba(0,0,0,0.3);">Profit Share</th></tr>
+                <tr><th style="background: linear-gradient(135deg, #7c3aed, #a855f7); color: white; text-shadow: 1px 1px 2px rgba(0,0,0,0.3);">Shareholder</th><th style="background: linear-gradient(135deg, #7c3aed, #a855f7); color: white; text-shadow: 1px 1px 2px rgba(0,0,0,0.3);">QID</th><th style="background: linear-gradient(135deg, #7c3aed, #a855f7); color: white; text-shadow: 1px 1px 2px rgba(0,0,0,0.3);">Share %</th><th style="background: linear-gradient(135deg, #7c3aed, #a855f7); color: white; text-shadow: 1px 1px 2px rgba(0,0,0,0.3);">Profit Share</th></tr>
                 ${branchData.shareholders.map(shareholder => {
                   const profitShare = (profitAfterSavings * shareholder.sharePercentage) / 100;
                   return `<tr>
                     <td style="text-align: center;">${shareholder.name}</td>
                     <td style="text-align: center;">${shareholder.quid}</td>
                     <td style="text-align: center;">${shareholder.sharePercentage}%</td>
-                    <td style="text-align: center;">${shareholder.zakathPercentage || 0}%</td>
                     <td style="text-align: center;">${formatCurrency(profitShare)}</td>
                   </tr>`;
                 }).join('')}
-                <tr style="background: #faf5ff;"><td style="text-align: center;"><strong>TOTAL</strong></td><td style="text-align: center;"></td><td style="text-align: center;"><strong>${branchData.shareholders.reduce((sum, s) => sum + s.sharePercentage, 0)}%</strong></td><td style="text-align: center;"></td><td style="text-align: center;"><strong>${formatCurrency(profitAfterSavings)}</strong></td></tr>
+                <tr style="background: #faf5ff;"><td style="text-align: center;"><strong>TOTAL</strong></td><td style="text-align: center;"></td><td style="text-align: center;"><strong>${branchData.shareholders.reduce((sum, s) => sum + s.sharePercentage, 0)}%</strong></td><td style="text-align: center;"><strong>${formatCurrency(profitAfterSavings)}</strong></td></tr>
             </table>
         </div>`;
       }
@@ -484,119 +483,7 @@ export default function AccountingManagement({ expenditures, onAddExpenditure, o
     </div>
     
     </div>
-    
-    <div style="margin-top: 20px;">
-        <h2 style="text-align: center; color: #1e40af; margin-bottom: 20px;">Financial Analytics & Charts</h2>
-    </div>
-    
-    <div class="chart-container">
-        <h3 style="color: #1e40af; font-size: 12px; margin-bottom: 10px;">📊 Visual Data Analysis</h3>
-        
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
-            <div>
-                <h4 style="font-size: 10px; margin: 5px 0;">Income vs Expenses</h4>
-                <div class="pie-chart" style="background: conic-gradient(#22c55e 0deg ${(branchData.totalIncome / (branchData.totalIncome + branchData.totalExpenses) * 360)}deg, #ef4444 ${(branchData.totalIncome / (branchData.totalIncome + branchData.totalExpenses) * 360)}deg 360deg);"></div>
-                <div style="font-size: 8px; margin-top: 5px;">
-                    <span style="color: #22c55e;">■</span> Income: ${formatCurrency(branchData.totalIncome)}<br>
-                    <span style="color: #ef4444;">■</span> Expenses: ${formatCurrency(branchData.totalExpenses)}
-                </div>
-            </div>
-            
-            <div>
-                <h4 style="font-size: 10px; margin: 5px 0;">Monthly Performance</h4>
-                <div class="bar-chart">
-                    <div class="bar" style="height: ${Math.min(100, (branchData.totalIncome / Math.max(branchData.totalIncome, branchData.totalExpenses)) * 100)}%; width: 30px; background: #22c55e;">Inc</div>
-                    <div class="bar" style="height: ${Math.min(100, (branchData.totalExpenses / Math.max(branchData.totalIncome, branchData.totalExpenses)) * 100)}%; width: 30px; background: #ef4444;">Exp</div>
-                    <div class="bar" style="height: ${Math.min(100, Math.abs(branchData.totalEarnings) / Math.max(branchData.totalIncome, branchData.totalExpenses) * 100)}%; width: 30px; background: ${branchData.totalEarnings >= 0 ? '#3b82f6' : '#f97316'};">Net</div>
-                </div>
-            </div>
-        </div>
-        
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
-            <div>
-                <h4 style="font-size: 10px; margin: 5px 0;">Expense Breakdown</h4>
-                <div class="pie-chart" style="background: conic-gradient(
-                    ${(() => {
-                      const expenseCategories = {};
-                      branchData.expenditures.forEach(exp => {
-                        exp.expenses.forEach(expense => {
-                          const categoryKey = expense.category.toUpperCase();
-                          expenseCategories[categoryKey] = (expenseCategories[categoryKey] || 0) + expense.amount;
-                        });
-                      });
-                      
-                      const sortedCategories = Object.entries(expenseCategories).sort(([,a], [,b]) => b - a).slice(0, 4);
-                      const total = Object.values(expenseCategories).reduce((sum, val) => sum + val, 0);
-                      
-                      if (sortedCategories.length === 0) return '#f3f4f6 0deg 360deg';
-                      
-                      let currentAngle = 0;
-                      const colors = ['#ef4444', '#f97316', '#eab308', '#22c55e'];
-                      let gradientStops = '';
-                      
-                      sortedCategories.forEach(([category, amount], index) => {
-                        const angle = (amount / total) * 360;
-                        gradientStops += `${colors[index]} ${currentAngle}deg ${currentAngle + angle}deg${index < sortedCategories.length - 1 ? ', ' : ''}`;
-                        currentAngle += angle;
-                      });
-                      
-                      return gradientStops;
-                    })()}
-                );"></div>
-                <div style="font-size: 7px; margin-top: 5px;">
-                    ${(() => {
-                      const expenseCategories = {};
-                      branchData.expenditures.forEach(exp => {
-                        exp.expenses.forEach(expense => {
-                          const categoryKey = expense.category.toUpperCase();
-                          expenseCategories[categoryKey] = (expenseCategories[categoryKey] || 0) + expense.amount;
-                        });
-                      });
-                      
-                      const sortedCategories = Object.entries(expenseCategories).sort(([,a], [,b]) => b - a).slice(0, 4);
-                      const colors = ['#ef4444', '#f97316', '#eab308', '#22c55e'];
-                      
-                      return sortedCategories.map(([category, amount], index) => 
-                        `<span style="color: ${colors[index]};">■</span> ${category}: ${formatCurrency(amount)}<br>`
-                      ).join('');
-                    })()}
-                </div>
-            </div>
-            
-            <div>
-                <h4 style="font-size: 10px; margin: 5px 0;">Expense Categories (Bar Chart)</h4>
-                <div class="bar-chart" style="height: 120px; justify-content: center;">
-                    ${(() => {
-                      const expenseCategories = {};
-                      branchData.expenditures.forEach(exp => {
-                        exp.expenses.forEach(expense => {
-                          const categoryKey = expense.category.toUpperCase();
-                          expenseCategories[categoryKey] = (expenseCategories[categoryKey] || 0) + expense.amount;
-                        });
-                      });
-                      
-                      const sortedCategories = Object.entries(expenseCategories).sort(([,a], [,b]) => b - a).slice(0, 5);
-                      const maxAmount = Math.max(...sortedCategories.map(([,amount]) => amount));
-                      const colors = ['#ef4444', '#f97316', '#eab308', '#22c55e', '#3b82f6'];
-                      
-                      if (sortedCategories.length === 0) {
-                        return '<div style="text-align: center; line-height: 100px; color: #666;">No expense data</div>';
-                      }
-                      
-                      return sortedCategories.map(([category, amount], index) => {
-                        const height = (amount / maxAmount) * 100;
-                        return `<div style="display: flex; flex-direction: column; align-items: center; margin: 0 8px;">
-                          <div class="bar" style="height: ${height}%; width: 25px; background: ${colors[index]}; margin-bottom: 5px;"></div>
-                          <div style="font-size: 6px; text-align: center; max-width: 30px; word-wrap: break-word;">${category.substring(0, 6)}</div>
-                          <div style="font-size: 5px; color: #666; text-align: center;">${formatCurrency(amount)}</div>
-                        </div>`;
-                      }).join('');
-                    })()}
-                </div>
-            </div>
-        </div>
 
-        </div>
         
     </div>
     
@@ -1431,7 +1318,7 @@ export default function AccountingManagement({ expenditures, onAddExpenditure, o
               <span>💰</span>
               <span>Manage Savings</span>
             </button>
-            <div className="flex space-x-3">
+            <div className="flex space-x-4">
               <button
                 onClick={async () => {
                   const monthName = months.find(m => m.value === parseInt(selectedMonth))?.label;
@@ -1441,22 +1328,23 @@ export default function AccountingManagement({ expenditures, onAddExpenditure, o
                   window.open(url, '_blank');
                   setTimeout(() => URL.revokeObjectURL(url), 1000);
                 }}
-                className="px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 font-medium shadow-lg transform hover:scale-105 transition-all duration-200 flex items-center space-x-2"
+                className="group relative px-6 py-3 bg-white border-2 border-blue-600 text-blue-600 rounded-xl hover:bg-blue-600 hover:text-white font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300 flex items-center space-x-3 min-w-[140px] justify-center"
               >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                <svg className="w-5 h-5 group-hover:scale-110 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
-                <span>View Report</span>
+                <span className="font-medium">View Report</span>
+                <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-400 to-blue-600 opacity-0 group-hover:opacity-10 transition-opacity duration-300"></div>
               </button>
               <button
                 onClick={() => downloadBranchPDF(branchData, selectedMonth, selectedYear)}
-                className="px-4 py-2 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-lg hover:from-green-700 hover:to-green-800 font-medium shadow-lg transform hover:scale-105 transition-all duration-200 flex items-center space-x-2"
+                className="group relative px-6 py-3 bg-gradient-to-r from-emerald-600 via-green-600 to-emerald-700 text-white rounded-xl hover:from-emerald-700 hover:via-green-700 hover:to-emerald-800 font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300 flex items-center space-x-3 min-w-[140px] justify-center"
               >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                <svg className="w-5 h-5 group-hover:scale-110 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3M7 7h10a2 2 0 012 2v10a2 2 0 01-2 2H7a2 2 0 01-2-2V9a2 2 0 012-2z" />
                 </svg>
-                <span>Download</span>
+                <span className="font-medium">Download PDF</span>
+                <div className="absolute inset-0 rounded-xl bg-white opacity-0 group-hover:opacity-10 transition-opacity duration-300"></div>
               </button>
             </div>
           </div>
@@ -1620,7 +1508,7 @@ export default function AccountingManagement({ expenditures, onAddExpenditure, o
                     printWindow.close();
                   }, 250);
                 }}
-                className="px-4 py-2 bg-white text-indigo-600 rounded-lg hover:bg-indigo-50 font-medium flex items-center space-x-2 border border-indigo-200"
+                className="group px-5 py-2.5 bg-white border-2 border-indigo-600 text-indigo-600 rounded-xl hover:bg-indigo-600 hover:text-white font-semibold shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-300 flex items-center space-x-2.5"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
