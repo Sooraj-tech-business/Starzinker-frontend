@@ -131,7 +131,7 @@ export default function Dashboard({ onLogout }) {
       try {
         // Fetch all data in parallel
         const [branchesResponse, employeesResponse, tempEmployeesResponse, expendituresResponse] = await Promise.all([
-          api.get('/api/branches').catch(() => ({ data: [] })),
+          api.get('/api/branches/with-temp-salary').catch(() => ({ data: [] })),
           api.get('/api/employees').catch(() => ({ data: [] })),
           api.get('/api/temp-employees').catch(() => ({ data: [] })),
           api.get('/api/expenditures').catch(() => ({ data: [] }))

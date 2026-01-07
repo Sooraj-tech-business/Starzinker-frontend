@@ -10,6 +10,7 @@ import {
   ArcElement,
 } from 'chart.js';
 import { Bar, Doughnut } from 'react-chartjs-2';
+import api from '../api/config';
 
 ChartJS.register(
   CategoryScale,
@@ -35,6 +36,7 @@ export default function BranchManagement({ branches, users, onEditBranch, onView
   const [expiringSoonSearchTerm, setExpiringSoonSearchTerm] = useState('');
   const [expiringSoonFilter, setExpiringSoonFilter] = useState('all');
   const [expiringSoonCurrentPage, setExpiringSoonCurrentPage] = useState(1);
+  const [tempEmployeeData, setTempEmployeeData] = useState({});
   const itemsPerPage = 10;
   const documentItemsPerPage = 5;
 
@@ -74,6 +76,25 @@ export default function BranchManagement({ branches, users, onEditBranch, onView
     setFilteredBranches(filtered);
     setCurrentPage(1);
   }, [branches, searchTerm, locationFilter, sortField, sortDirection]);
+
+  useEffect(() => {
+    const fetchTempEmployeeData = async () => {
+      if (!branches?.length) return;
+      
+      const tempData = {};
+      for (const branch of branches) {
+        try {
+          const response = await api.get(`/api/temp-employees/branch/${encodeURIComponent(branch.name)}`);
+          tempData[branch.name] = response.data;
+        } catch (error) {
+          tempData[branch.name] = { totalSalary: 0, employeeCount: 0, employees: [] };
+        }
+      }
+      setTempEmployeeData(tempData);
+    };
+    
+    fetchTempEmployeeData();
+  }, [branches]);
 
   // Analytics calculations
   const analytics = {
@@ -471,6 +492,14 @@ export default function BranchManagement({ branches, users, onEditBranch, onView
                       <div className="font-medium">{users?.filter(user => user.workLocation === branch.name).length || 0}</div>
                     </div>
                     <div>
+                      <span className="text-gray-500">Temp Employees:</span>
+                      <div className="font-medium">{tempEmployeeData[branch.name]?.employeeCount || 0}</div>
+                    </div>
+                    <div className="col-span-2">
+                      <span className="text-gray-500">Temp Salary:</span>
+                      <div className="font-medium">{(tempEmployeeData[branch.name]?.totalSalary || 0).toLocaleString()} QR</div>
+                    </div>
+                    <div>
                       <span className="text-gray-500">Vehicles:</span>
                       <div className="font-medium">{branch.vehicles?.length || 0}</div>
                     </div>
@@ -626,6 +655,14 @@ export default function BranchManagement({ branches, users, onEditBranch, onView
                           const totalSalary = workingEmployees.reduce((sum, emp) => sum + (emp.salary || 0), 0);
                           return `${totalSalary.toLocaleString()} QR`;
                         })()}
+                      </div>
+                      <div className="text-sm text-gray-500 flex items-center">
+                        <span className="w-2 h-2 bg-yellow-400 rounded-full mr-2"></span>
+                        Temp Employees: {tempEmployeeData[branch.name]?.employeeCount || 0}
+                      </div>
+                      <div className="text-sm text-gray-500 flex items-center">
+                        <span className="w-2 h-2 bg-red-400 rounded-full mr-2"></span>
+                        Temp Salary: {(tempEmployeeData[branch.name]?.totalSalary || 0).toLocaleString()} QR
                       </div>
                       <div className="text-sm text-gray-500 flex items-center">
                         <span className="w-2 h-2 bg-orange-400 rounded-full mr-2"></span>

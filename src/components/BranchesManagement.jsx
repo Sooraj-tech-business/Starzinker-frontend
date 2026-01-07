@@ -96,6 +96,15 @@ export default function BranchesManagement({ branches, users, onAddBranchClick, 
                   </div>
                 </div>
                 <div>
+                  <span className="text-gray-500">Temp Salary:</span>
+                  <div className="font-medium">
+                    QAR {branch.totalTempSalary ? branch.totalTempSalary.toLocaleString() : '0'}
+                  </div>
+                  <div className="text-xs text-gray-400">
+                    {branch.tempEmployeeCount || 0} temp emp.
+                  </div>
+                </div>
+                <div>
                   <span className="text-gray-500">Address:</span>
                   <div className="font-medium text-xs">{branch.address || 'N/A'}</div>
                 </div>
@@ -145,6 +154,9 @@ export default function BranchesManagement({ branches, users, onAddBranchClick, 
               </th>
               <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Employees
+              </th>
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Temp Salary
               </th>
               <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Actions
@@ -208,6 +220,14 @@ export default function BranchesManagement({ branches, users, onAddBranchClick, 
                       console.log(`Branch: ${branch.name}, Count: ${count}`, users?.map(u => ({name: u.name, workLocation: u.workLocation, branch: u.branch})));
                       return count;
                     })()} employee(s)
+                  </div>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <div className="text-sm text-gray-500">
+                    {branch.totalTempSalary ? `QAR ${branch.totalTempSalary.toLocaleString()}` : 'QAR 0'}
+                  </div>
+                  <div className="text-xs text-gray-500">
+                    {branch.tempEmployeeCount || 0} temp employee(s)
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-indigo-600">
